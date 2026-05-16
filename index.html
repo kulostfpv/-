@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neo Brain & IQ Platform (Advanced Style)</title>
+    <title>Neo Brain & IQ Platform (Final Complete)</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -44,8 +44,8 @@
         .progress-fill { height: 100%; background: var(--accent-color); width: 0%; transition: width 0.3s; }
         
         .matrix-dummy-box {
-            width: 100%; height: 180px; background: #0d1117; border: 2px dashed var(--iq-color);
-            border-radius: 8px; margin: 15px 0; display: flex; flex-direction: column;
+            width: 100%; min-height: 180px; background: #0d1117; border: 2px dashed var(--iq-color);
+            border-radius: 8px; margin: 15px 0; padding: 15px; display: flex; flex-direction: column;
             justify-content: center; align-items: center; color: var(--text-white);
         }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -97,8 +97,8 @@
         <div class="panel">
             <p style="margin:0; font-size:14px; color:#8b949e;">空白に当てはまる規則的な図形を選択してください</p>
             <div class="matrix-dummy-box">
-                <div style="font-size:24px; font-weight:bold; margin-bottom:8px;" id="iq-question-title">問題番号</div>
-                <div style="font-size:14px; color:#8b949e;">[ 本番環境ではここに図形マトリクス画像が表示されます ]</div>
+                <div style="font-size:16px; color:#8b949e; margin-bottom:10px;" id="iq-question-number">第 1 問</div>
+                <div style="font-size:24px; font-weight:bold; color:#fff; letter-spacing:2px; line-height:1.5;" id="iq-question-title">問題内容</div>
             </div>
         </div>
         <div id="iq-options" class="options-grid"></div>
@@ -143,7 +143,6 @@
         <div id="brain-panel" class="panel">
             <div id="formula" class="formula">0 + 0</div>
         </div>
-        
         <div id="num-pad" class="num-pad"></div>
     </div>
 
@@ -162,7 +161,6 @@
 <div id="debug-console">【JavaScript Error Log】<br></div>
 
 <script>
-    // グローバルエラーハンドラ
     window.onerror = function(message, source, lineno, colno, error) {
         const consolePanel = document.getElementById('debug-console');
         if (consolePanel) {
@@ -173,32 +171,80 @@
     };
 
     let activeViewId = "menu-view";
-    
-    // IQ管理用データ
     let iqCurrentIndex = 0;
     let iqScore = 0;
     let iqQuestions = [];
+
     const intervalTemplates = {
         10: { title: "驚異的なスピードです！", msg: "ここまでの回答速度と正確性は、全参加者の<b>上位12%</b>に位置しています。この調子を維持しましょう！", badge: "🏆" },
         20: { title: "論理的思考のブレがありません", msg: "中盤の難問セクションを突破しました。あなたの『図形類推能力』は<b>平均を大きく上回って</b>います。", badge: "🧠" },
-        30: { title: "後半戦へ突入！", msg: "30問を消化しました。一般的な受験者が集中力を切らすポイントですが、あなたの回答精度は落ちていません。残り20問です。", badge: "🔥" },
+        30: { title: "驚くべき集中力です！", msg: "30問を消化しました。一般的な受験者が集中力を切らすポイントですが、あなたの回答精度は落ちていません。残り20問です。", badge: "🔥" },
         40: { title: "最高IQの領域へ挑戦中", msg: "ここから先はIQ130以上の突破率が15%未満の超難問エリアです。あなたの脳の限界を測定します。", badge: "🚀" }
     };
 
+    // ==================== 1〜50問 完全リアルデータ ====================
     const actualIqQuestions = [
-        { id: 1, puzzle: "◯  →  △  →  □  →  ？", options: ["◯", "△", "□", "☆"], correct: 3, explanation: "形が円から三角形、四角形へと変化しているため、次は星型が入ります。" },
-        { id: 2, puzzle: "🔴  →  🔵  →  🟢  →  🔴  →  🔵  →  ？", options: ["🔴", "🔵", "🟢", "🟡"], correct: 2, explanation: "赤・青・緑の3色のパターンが順番に繰り返されています。" },
-        { id: 3, puzzle: "🟥 ＝ 🟦<br>🔺 ＝ ？", options: ["🔻", "🔷", "🔹", "🔺"], correct: 1, explanation: "上の段で「赤から青」への変化規則があるため、下の段の赤色の三角形は青色の菱形に変化します。" },
-        { id: 4, puzzle: "🔺  →  ⬜  →  ⬠  →  ？", options: ["◯", "🔺", "⬡", "🌟"], correct: 2, explanation: "図形の角の数が3つ、4つ、5つと増えているため、次は6角形が入ります。" },
-        { id: 5, puzzle: "⭐️  →  🌙  →  ⭐️  →  🌙  →  ？", options: ["⭐️", "🌙", "☀️", "🌀"], correct: 0, explanation: "星と月が交互に並ぶ単純な規則性です。" },
-        { id: 6, puzzle: "🌗  →  🌑  →  🌓  →  🌕  →  ？", options: ["🌗", "🌑", "🌓", "🌕"], correct: 0, explanation: "月の満ち欠けが一定の周期で右回りに循環しています。" },
-        { id: 7, puzzle: "⬆️  →  ➡️  →  ⬇️  →  ？", options: ["⬆️", "➡️", "⬇️", "⬅️"], correct: 3, explanation: "矢印の向きが時計回りに90度ずつ回転しています。" },
-        { id: 8, puzzle: "🔴  →  🔴🔴  →  🔴🔴🔴  →  ？", options: ["🔴", "🔴🔴", "🔴🔴🔴", "🔴🔴🔴🔴"], correct: 3, explanation: "要素の数が1つずつ一律で増加しています。" },
-        { id: 9, puzzle: "➖ ＋ ◯ ＝ ⨁<br>✖️ ＋ ◯ ＝ ？", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1, explanation: "直線を丸の中に組み合わせる合成規則です。バツ印を丸に入れると「⊗」になります。" },
-        { id: 10, puzzle: "左［ 👈 ］ 右［ 👉 ］<br>上［ 👆 ］ 下［ ？ ］", options: ["👈", "👉", "👆", "👇"], correct: 3, explanation: "上下左右の空間的な対比規則です。上に対応するのは下を指す手になります。" }
+        // 1-10: 初級（入門・自尊心向上ステージ）
+        { id: 1, puzzle: "◯  →  △  →  □  →  ？", options: ["◯", "△", "□", "☆"], correct: 3 },
+        { id: 2, puzzle: "🔴  →  🔵  →  🟢  →  🔴  →  🔵  →  ？", options: ["🔴", "🔵", "🟢", "🟡"], correct: 2 },
+        { id: 3, puzzle: "🟥 ＝ 🟦<br>🔺 ＝ ？", options: ["🔻", "🔷", "🔹", "🔺"], correct: 1 },
+        { id: 4, puzzle: "🔺  →  ⬜  →  ⬠  →  ？", options: ["◯", "🔺", "⬡", "🌟"], correct: 2 },
+        { id: 5, puzzle: "⭐️  →  🌙  →  ⭐️  →  🌙  →  ？", options: ["⭐️", "🌙", "☀️", "🌀"], correct: 0 },
+        { id: 6, puzzle: "🌗  →  🌑  →  🌓  →  🌕  →  ？", options: ["🌗", "🌑", "🌓", "🌕"], correct: 0 },
+        { id: 7, puzzle: "⬆️  →  ➡️  →  ⬇️  →  ？", options: ["⬆️", "➡️", "⬇️", "⬅️"], correct: 3 },
+        { id: 8, puzzle: "🔴  →  🔴🔴  →  🔴🔴🔴  →  ？", options: ["🔴", "🔴🔴", "🔴🔴🔴", "🔴🔴🔴🔴"], correct: 3 },
+        { id: 9, puzzle: "➖ ＋ ◯ ＝ ⨁<br>✖️ ＋ ◯ ＝ ？", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1 },
+        { id: 10, puzzle: "左［ 👈 ］ 右［ 👉 ］<br>上［ 👆 ］ 下［ ？ ］", options: ["👈", "👉", "👆", "👇"], correct: 3 },
+        
+        // 11-20: 初中級（複合規則・テンポ重視ステージ）
+        { id: 11, puzzle: "⬆️🔴  →  ➡️🔵  →  ⬇️🟢  →  ？", options: ["⬅️🔴", "⬅️🔵", "⬆️🔴", "⬇️🟡"], correct: 0 },
+        { id: 12, puzzle: "行1：🔺🔴　⬜🔴<br>行2：🔺🔵　？", options: ["⬜🔴", "🔺🔴", "⬜🔵", "🔺🔵"], correct: 2 },
+        { id: 13, puzzle: "⭐⭐🌙  →  ⭐⭐⭐  →  ⭐⭐⭐⭐  →  ？", options: ["⭐⭐⭐⭐⭐", "⭐⭐⭐⭐🌙", "⭐⭐⭐🌙🌙", "🌙🌙🌙🌙🌙"], correct: 0 },
+        { id: 14, puzzle: "🕒  →  ⑥  →  ⑨  →  ？", options: ["🕒", "⑥", "⑨", "⑫"], correct: 3 },
+        { id: 15, puzzle: "🔴 ＋ 🔵 ＝ 🟣<br>🟡 ＋ 🔵 ＝ 🟢<br>🔴 ＋ 🟡 ＝ ？", options: ["🧡", "🟤", "🖤", "⚪"], correct: 0 },
+        { id: 16, puzzle: "🔶  →  🔶🔶🔶  →  🔶🔶🔶🔶🔶  →  ？", options: ["🔶🔶🔶🔶🔶🔶", "🔶🔶🔶🔶🔶🔶🔶", "🔶🔶🔶🔶🔶🔶🔶🔶", "🔶"], correct: 1 },
+        { id: 17, puzzle: "［ 🔴 ］  →  （ ⬛ ）  →  ［ 🔺 ］  →  ？", options: ["［ 🌟 ］", "（ 🌟 ）", "［ 🟢 ］", "（ 🔴 ）"], correct: 1 },
+        { id: 18, puzzle: "🫱  →  🫲  →  🫱  →  ？", options: ["🫱", "🫲", "👆", "👇"], correct: 1 },
+        { id: 19, puzzle: "↗️  →  ↘️  →  ↙️  →  ？", options: ["↖️", "↗️", "↘️", "↙️"], correct: 0 },
+        { id: 20, puzzle: "行1：🍏 🍏 🍏 ＝ 9<br>行2：🍎 🍎 ＝ 4<br>行3：🍊 ＝ ？", options: ["1", "2", "3", "0"], correct: 0 },
+
+        // 21-35: 中級（標準マトリクス・思考シフトステージ）
+        { id: 21, puzzle: "行1：⬛ ⬜ ⬛<br>行2：⬜ ⬛ ⬜<br>行3：⬛ ⬜ ？", options: ["⬛", "⬜", "🔷", "🔸"], correct: 0 },
+        { id: 22, puzzle: "🔵🔵🔵  →  🔵🔵  →  🔵  →  ？", options: ["空白(何もなし)", "🔵", "🔴", "🔳"], correct: 0 },
+        { id: 23, puzzle: "◯🔴  →  ⬜🔵  →  △🟢  →  ？", options: ["☆🟡", "◯🟡", "⬜🔴", "△🔵"], correct: 0 },
+        { id: 24, puzzle: "行1：🟥 🔺 🟥<br>行2：🟦 🔹 🟦<br>行3：🟩 ？ 🟩", options: ["🟢", "🔺", "🟥", "🔷"], correct: 0 },
+        { id: 25, puzzle: "1 　 2 　 3<br>2 　 4 　 6<br>3 　 6 　 ？", options: ["7", "8", "9", "12"], correct: 2 },
+        { id: 26, puzzle: "🔲  →  🔳  →  🔲  →  ？", options: ["🔲", "🔳", "⬜", "⬛"], correct: 1 },
+        { id: 27, puzzle: "12:00  →  01:30  →  03:00  →  ？", options: ["04:00", "04:30", "05:00", "05:30"], correct: 1 },
+        { id: 28, puzzle: "⭐  →  ⭐⭐  →  ⭐⭐⭐⭐  →  ？", options: ["⭐⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐⭐⭐"], correct: 3 },
+        { id: 29: puzzle: "行1：➕ ➖ ➗<br>行2：➖ ➗ ➕<br>行3：➗ ➕ ？", options: ["➕", "➖", "➗", "✖️"], correct: 1 },
+        { id: 30, puzzle: "👍  →  ☝️  →  👎  →  ？", options: ["👉", "👈", "👆", "👇"], correct: 1 },
+        { id: 31, puzzle: "A1  →  B2  →  C3  →  ？", options: ["D4", "D5", "E4", "C4"], correct: 0 },
+        { id: 32, puzzle: "🟢🔺  →  🔺🟢  →  🟢🔺  →  ？", options: ["🟢🔺", "🔺🟢", "🟢🟢", "🔺🔺"], correct: 1 },
+        { id: 33, puzzle: "行1：🟪 🟫 🟪<br>行2：🟫 🟪 🟫<br>行3：🟪 ？ 🟪", options: ["🟪", "🟫", "⬛", "⬜"], correct: 1 },
+        { id: 34, puzzle: "📦  →  📭  →  📦  →  ？", options: ["📦", "📭", "📬", "📮"], correct: 1 },
+        { id: 35, puzzle: "◯  →  ☯️  →  ◯  →  ？", options: ["◯", "☯️", "☸️", "☮️"], correct: 1 },
+
+        // 36-45: 上級（高知能・論理演算ステージ）
+        { id: 36, puzzle: "行1：🔳🔳🔲 ＋ 🔲🔳🔳 ＝ 🔳🔲🔳<br>（規則：不一致＝🔳）<br>行2：🔳🔲🔳 ＋ 🔳🔲🔳 ＝ ？", options: ["🔲🔲🔲", "🔳🔳🔳", "🔳🔲🔳", "🔲🔳🔲"], correct: 0 },
+        { id: 37, puzzle: "行1：◯ 　 △ 　 □<br>行2：□ 　 ◯ 　 △<br>行3：△ 　 □ 　 ？", options: ["◯", "△", "□", "☆"], correct: 0 },
+        { id: 38, puzzle: "3 ＝ 🔺<br>4 ＝ ⬜<br>5 ＝ ⬠<br>6 ＝ ？", options: ["◯", "🔺", "⬡", "🌟"], correct: 2 },
+        { id: 39, puzzle: "123  →  231  →  312  →  ？", options: ["123", "231", "312", "321"], correct: 0 },
+        { id: 40, puzzle: "行1：🔵 🔴 🟢<br>行2：🟢 🔵 🔴<br>行3：🔴 🟢 ？", options: ["🔵", "🔴", "🟢", "🟡"], correct: 0 },
+        { id: 41, puzzle: "🔺 ＋ 🔻 ＝ ⏳<br>▶️ ＋ ◀️ ＝ ？", options: ["🎀", "🌟", "🍀", "💎"], correct: 0 },
+        { id: 42, puzzle: "1010  →  0101  →  1010  →  ？", options: ["1010", "0101", "1111", "0000"], correct: 1 },
+        { id: 43, puzzle: "行1：⭐ 🌙 ☀️<br>行2：☀️ ⭐ 🌙<br>行3：🌙 ☀️ ？", options: ["⭐", "🌙", "☀️", "☁️"], correct: 0 },
+        { id: 44, puzzle: "行1：2 , 4 , 8<br>行2：3 , 9 , 27<br>行3：4 , 16 , ？", options: ["32", "48", "64", "80"], correct: 2 },
+        { id: 45, puzzle: "行1：🖤 🤍 🖤<br>行2：🤍 🖤 🤍<br>行3：🖤 🤍 ？", options: ["🖤", "🤍", "🔷", "🔶"], correct: 0 },
+
+        // 46-50: 超上級（天才・例外アルゴリズムステージ）
+        { id: 46, puzzle: "2 , 3 , 5 , 7 , 11 , ？", options: ["12", "13", "14", "15"], correct: 1 },
+        { id: 47, puzzle: "1 → 2 → 3 → 5 → 8 → ？", options: ["10", "11", "12", "13"], correct: 3 },
+        { id: 48, puzzle: "◯ ＝ 0<br>🔺 ＝ 3<br>⬜ ＝ 4<br>⭐ ＝ ？", options: ["5", "6", "10", "12"], correct: 2 },
+        { id: 49, puzzle: "1 → 2 → 4 → 7 → 11 → 16 → ？", options: ["20", "21", "22", "23"], correct: 2 },
+        { id: 50, puzzle: "🔴 ＋ 🔵 ＝ 3<br>🔵 ＋ 🟢 ＝ 5<br>🟢 ＋ 🔴 ＝ 4<br>🔴 ＋ 🔵 ＋ 🟢 ＝ ？", options: ["5", "6", "7", "8"], correct: 1 }
     ];
 
-    // 脳トレ用変数
     let brainCurrentQuestion = 1;
     let brainCorrectAnswer = 0;
     let brainUserResponse = "";
@@ -217,23 +263,11 @@
         }
     }
 
-    // ==================== IQテスト処理 ====================
+    // ==================== IQテスト制御 ====================
     function startIqTest() {
         iqCurrentIndex = 0;
         iqScore = 0;
-        iqQuestions = [];
-        for(let i = 0; i < actualIqQuestions.length; i++) {
-            iqQuestions.push(actualIqQuestions[i]);
-        }
-        for(let i = 11; i <= 50; i++) {
-            iqQuestions.push({
-                id: i,
-                title: `第 ${i} 問`,
-                puzzle: `中上級ロジックパズル ${i}<br>【 ⚙️ ✖️ 🧩 ＝ ？ 】`,
-                options: ["選択肢 A", "選択肢 B", "選択肢 C", "選択肢 D"],
-                correct: Math.floor(Math.random() * 4)
-            });
-        }
+        iqQuestions = [...actualIqQuestions]; 
         switchView('iq-quiz-view');
         showIqQuestion();
     }
@@ -243,15 +277,8 @@
         document.getElementById('iq-progress-text').innerText = iqCurrentIndex + 1;
         document.getElementById('iq-progress-fill').style.width = `${((iqCurrentIndex + 1) / iqQuestions.length) * 100}%`;
         
-        const dummyBox = document.querySelector('.matrix-dummy-box');
-        if (dummyBox) {
-            dummyBox.innerHTML = `
-                <div style="font-size:16px; color:#8b949e; margin-bottom:10px;">第 ${q.id} 問</div>
-                <div style="font-size:24px; font-weight:bold; color:#fff; letter-spacing:2px; line-height:1.5;">
-                    ${q.puzzle}
-                </div>
-            `;
-        }
+        document.getElementById('iq-question-number').innerText = `第 ${q.id} 問`;
+        document.getElementById('iq-question-title').innerHTML = q.puzzle;
         
         const optionsContainer = document.getElementById('iq-options');
         optionsContainer.innerHTML = '';
@@ -284,6 +311,7 @@
             showIqQuestion();
         } else {
             switchView('iq-result-view');
+            // 基礎点+偏差値換算（平均25問正解＝IQ100とする正規シミュレーション）
             const calculatedIq = Math.round(100 + ((iqScore - 25) * 2));
             document.getElementById('iq-score').innerText = calculatedIq;
             
@@ -304,7 +332,7 @@
         showIqQuestion();
     }
 
-    // ==================== 脳トレ処理 ====================
+    // ==================== 脳トレ制御 ====================
     function startBrainGame(advanced) {
         isAdvancedMode = advanced;
         brainCurrentQuestion = 1;
@@ -350,20 +378,16 @@
         document.getElementById('formula').innerText = brainFormulaText;
         document.getElementById('brain-progress').innerText = brainCurrentQuestion;
 
-        // 問題ごとにテンキーの描画（シャッフル判定含む）を実行
         renderNumPad();
     }
 
-    // テンキーの動的生成ロジック（パターンC対応）
     function renderNumPad() {
         const padContainer = document.getElementById('num-pad');
         if (!padContainer) return;
         padContainer.innerHTML = '';
 
-        // 基本となる数字配列
         let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
 
-        // 上級者モード（パターンC）の場合は数字群をランダムシャッフル
         if (isAdvancedMode) {
             for (let i = numbers.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -371,18 +395,15 @@
             }
         }
 
-        // 1〜9番目のスロットを配置
         for (let i = 0; i < 9; i++) {
             createPadButton(padContainer, numbers[i], '');
         }
 
-        // 下段の特殊キー配置：[ C ] [ 10番目の数字 ] [ Enter ]
         createPadButton(padContainer, 'C', '#363b42');
         createPadButton(padContainer, numbers[9], '');
         createPadButton(padContainer, 'Enter', 'var(--brain-color)', '#000');
     }
 
-    // ボタン要素生成ヘルパー
     function createPadButton(container, value, bg, color) {
         const btn = document.createElement('button');
         btn.className = 'btn pad-btn';
