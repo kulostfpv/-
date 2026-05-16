@@ -46,12 +46,6 @@
         .progress-bar { width: 100%; height: 6px; background: #222; border-radius: 3px; margin-bottom: 20px; }
         .progress-fill { height: 100%; background: var(--accent-color); width: 0%; transition: width 0.3s; }
         
-        /* ----------------------------------------------------
-           見切れバグ修正箇所：
-           Flexboxの中央配置仕様（オーバー時に左が切れるバグ）を排除し、
-           安全なブロック配置（text-align: center）に変更。
-           縦の中央寄せはpaddingで担保。
-        ---------------------------------------------------- */
         .matrix-dummy-box {
             width: 100%; background: #090d13; border: 1px solid var(--border-color);
             border-radius: 8px; margin: 15px 0; padding: 40px 10px; 
@@ -63,7 +57,6 @@
             font-size: 22px; font-weight: bold; line-height: 1.8; letter-spacing: 2px;
             text-align: left; white-space: pre; display: inline-block; margin: 0 auto;
         }
-        /* ---------------------------------------------------- */
 
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .formula { font-size: 44px; font-weight: bold; color: var(--text-white); letter-spacing: 2px; margin: 20px 0; }
@@ -81,6 +74,13 @@
         .stat-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; margin-bottom: 4px; color: var(--text-white); }
         .stat-bar-bg { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; }
         .stat-bar-fill { height: 100%; background: var(--status-color); width: 0%; transition: 0.5s ease-out; }
+
+        /* レーダーチャート用キャンバス */
+        #radar-canvas {
+            margin: 20px auto 0 auto;
+            display: block;
+            max-width: 100%;
+        }
 
         .review-title { text-align: left; font-size: 16px; color: var(--iq-color); margin-top: 25px; margin-bottom: 10px; font-weight: bold;}
         .review-card { background: #10141b; border: 1px solid #21262d; border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: left; font-size: 14px; }
@@ -106,7 +106,7 @@
 
     <div id="status-view" class="view hidden">
         <h2 style="color: var(--status-color); text-align:center;">マイステータス</h2>
-        <div class="panel">
+        <div class="panel" style="padding-bottom:10px;">
             <div class="stat-row">
                 <div class="stat-label"><span>⚡ 処理速度 (Speed)</span><span id="st-spd">Lv.1</span></div>
                 <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-spd"></div></div>
@@ -127,6 +127,8 @@
                 <div class="stat-label"><span>🔥 継続力 (Stamina)</span><span id="st-sta">Lv.1</span></div>
                 <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-sta"></div></div>
             </div>
+            
+            <canvas id="radar-canvas" width="280" height="280"></canvas>
         </div>
         <button class="btn" onclick="switchView('menu-view')">メニューに戻る</button>
     </div>
@@ -232,7 +234,7 @@
 </div>
 
 <script>
-    // ==================== ステータス管理ロジック ====================
+    // ==================== ステータス管理＆レーダー描画 ====================
     let userStats = JSON.parse(localStorage.getItem('neoBrainStats')) || {
         speed: 1, accuracy: 1, spatial: 1, logic: 1, stamina: 1, lastDate: ""
     };
@@ -271,6 +273,94 @@
             setTimeout(() => {
                 document.getElementById(`bar-${ids[i]}`).style.width = `${(level / 99) * 100}%`;
             }, 100);
+        });
+
+        drawRadarChart();
+    }
+
+    function drawRadarChart() {
+        const canvas = document.getElementById('radar-canvas');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const r = Math.min(cx, cy) - 30; // 余白確保
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const stats = [
+            { label: 'Speed', val: Math.min(userStats.speed, 99) },
+            { label: 'Accuracy', val: Math.min(userStats.accuracy, 99) },
+            { label: 'Spatial', val: Math.min(userStats.spatial, 99) },
+            { label: 'Logic', val: Math.min(userStats.logic, 99) },
+            { label: 'Stamina', val: Math.min(userStats.stamina, 99) }
+        ];
+
+        // 頂点の角度計算（真上が0番目になるよう-90度シフト）
+        const angles = stats.map((_, i) => (Math.PI * 2 * i) / 5 - Math.PI / 2);
+
+        // 背景の五角形グリッド線描画
+        ctx.strokeStyle = '#30363d';
+        ctx.lineWidth = 1;
+        for (let j = 1; j <= 5; j++) {
+            ctx.beginPath();
+            const radius = r * (j / 5);
+            for (let i = 0; i < 5; i++) {
+                const x = cx + radius * Math.cos(angles[i]);
+                const y = cy + radius * Math.sin(angles[i]);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        }
+
+        // 中心からの放射線描画
+        ctx.strokeStyle = '#30363d';
+        angles.forEach(angle => {
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+            ctx.stroke();
+        });
+
+        // テキストラベルの描画
+        ctx.fillStyle = '#8b949e';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        stats.forEach((stat, i) => {
+            const x = cx + (r + 15) * Math.cos(angles[i]);
+            const y = cy + (r + 15) * Math.sin(angles[i]);
+            ctx.fillText(stat.label, x, y);
+        });
+
+        // 実際のステータスポリゴン描画
+        ctx.fillStyle = 'rgba(255, 85, 255, 0.3)'; // 薄いピンク
+        ctx.strokeStyle = '#ff55ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        stats.forEach((stat, i) => {
+            // 値(1〜99)を半径比率に変換
+            const radius = r * (stat.val / 99);
+            const x = cx + radius * Math.cos(angles[i]);
+            const y = cy + radius * Math.sin(angles[i]);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // 頂点のドット描画
+        ctx.fillStyle = '#ffffff';
+        stats.forEach((stat, i) => {
+            const radius = r * (stat.val / 99);
+            const x = cx + radius * Math.cos(angles[i]);
+            const y = cy + radius * Math.sin(angles[i]);
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fill();
         });
     }
 
