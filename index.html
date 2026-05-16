@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neo Brain & IQ Platform (Debug Layered)</title>
+    <title>Neo Brain & IQ Platform (Stable Full)</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -22,15 +22,15 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0; padding: 20px;
             display: flex; flex-direction: column; align-items: center;
-            padding-bottom: 60px; /* デバッグパネル用の余白 */
+            padding-bottom: 60px;
         }
         .container { width: 100%; max-width: 450px; }
-        
         .view { display: flex; flex-direction: column; }
         .hidden { display: none !important; }
         .panel {
             background: var(--panel-bg); border: 1px solid var(--border-color);
             border-radius: 12px; padding: 30px 20px; margin-bottom: 20px; text-align: center;
+            transition: background-color 0.2s ease;
         }
         .btn {
             background: #21262d; border: 1px solid var(--border-color); border-radius: 8px;
@@ -55,7 +55,13 @@
         .pad-btn { padding: 18px 0; font-size: 22px; margin-bottom: 0; }
         .score-board { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; color: #8b949e; }
         
-        /* モバイルデバッグパネル用スタイル */
+        /* エラー時（お手付き・空欄Enter）の赤フラッシュ演出 */
+        @keyframes flash-red {
+            0% { background-color: #4c1d1d; border-color: #f85149; }
+            100% { background-color: var(--panel-bg); border-color: var(--border-color); }
+        }
+        .flash-error { animation: flash-red 0.4s ease-in-out; }
+
         #debug-console {
             position: fixed; bottom: 0; left: 0; width: 100%; max-height: 80px; 
             background: #800000; color: #fff; font-family: monospace; font-size: 11px;
@@ -118,7 +124,6 @@
         <button class="btn" onclick="switchView('menu-view')">メニューに戻る</button>
     </div>
 
-
     <div id="brain-start-view" class="view hidden">
         <h2 style="color: var(--brain-color); text-align:center;">毎日脳トレ：計算20</h2>
         <div class="panel">
@@ -134,7 +139,7 @@
             <div>計算進行度: <span id="brain-progress">1</span> / 20</div>
             <div>経過時間: <span id="brain-timer">0.0</span>秒</div>
         </div>
-        <div class="panel">
+        <div id="brain-panel" class="panel">
             <div id="formula" class="formula">0 + 0</div>
         </div>
         <div class="num-pad">
@@ -145,7 +150,7 @@
             <button class="btn pad-btn" onclick="inputNum(5)">5</button>
             <button class="btn pad-btn" onclick="inputNum(6)">6</button>
             <button class="btn pad-btn" onclick="inputNum(7)">7</button>
-            <button class="btn pad-btn" onclick="inputNum(8)">8</button>
+            <button class="btn pad-btn" onclick="inputNum(8).btn">8</button>
             <button class="btn pad-btn" onclick="inputNum(9)">9</button>
             <button class="btn pad-btn" onclick="inputNum('C')" style="background:#363b42;">C</button>
             <button class="btn pad-btn" onclick="inputNum(0)">0</button>
@@ -168,7 +173,7 @@
 <div id="debug-console">【JavaScript Error Log】<br></div>
 
 <script>
-    // --- モバイル用グローバルエラーキャッチロジック ---
+    // グローバルエラーハンドラ
     window.onerror = function(message, source, lineno, colno, error) {
         const consolePanel = document.getElementById('debug-console');
         if (consolePanel) {
@@ -180,7 +185,7 @@
 
     let activeViewId = "menu-view";
     
-    // IQテスト用変数
+    // IQ管理用
     let iqCurrentIndex = 0;
     let iqScore = 0;
     let iqQuestions = [];
@@ -191,7 +196,7 @@
         40: { title: "最高IQの領域へ挑戦中", msg: "ここから先はIQ130以上の突破率が15%未満の超難問エリアです。あなたの脳の限界を測定します。", badge: "🚀" }
     };
 
-    // 脳トレ用変数
+    // 脳トレ用
     let brainCurrentQuestion = 1;
     let brainCorrectAnswer = 0;
     let brainUserResponse = "";
@@ -199,13 +204,18 @@
     let brainStartTime;
     let brainTimerInterval;
 
+    // 統合ビュー切り替えロジック
     function switchView(viewId) {
-        document.getElementById(activeViewId).classList.add('hidden');
-        document.getElementById(viewId).classList.remove('hidden');
-        activeViewId = viewId;
+        const currentView = document.getElementById(activeViewId);
+        const nextView = document.getElementById(viewId);
+        if (currentView && nextView) {
+            currentView.classList.add('hidden');
+            nextView.classList.remove('hidden');
+            activeViewId = viewId;
+        }
     }
 
-    // ==================== IQテスト ロジック ====================
+    // ==================== IQテスト処理 ====================
     function startIqTest() {
         iqCurrentIndex = 0;
         iqScore = 0;
@@ -226,8 +236,6 @@
         const q = iqQuestions[iqCurrentIndex];
         document.getElementById('iq-progress-text').innerText = iqCurrentIndex + 1;
         document.getElementById('iq-progress-fill').style.width = `${((iqCurrentIndex + 1) / iqQuestions.length) * 100}%`;
-        
-        // 【バグ修正】存在しない「iq-question-image.src」への代入処理を完全に削除
         document.getElementById('iq-question-title').innerText = q.title;
         
         const optionsContainer = document.getElementById('iq-options');
@@ -236,7 +244,7 @@
         q.options.forEach((opt, index) => {
             const btn = document.createElement('button');
             btn.className = 'btn';
-            btn.style.setPriority ? btn.style.setPriority('margin-bottom', '0') : btn.style.marginBottom = '0';
+            btn.style.marginBottom = '0';
             btn.innerText = opt;
             btn.onclick = () => handleIqAnswer(index);
             optionsContainer.appendChild(btn);
@@ -252,20 +260,28 @@
         const answeredCount = iqCurrentIndex;
 
         if (answeredCount % 10 === 0 && answeredCount < 50) {
-            showIntervalScreen(answeredCount);
+            switchView('iq-interval-view');
+            const data = intervalTemplates[answeredCount];
+            document.getElementById('interval-title').innerText = data.title;
+            document.getElementById('interval-message').innerHTML = data.msg;
+            document.getElementById('interval-badge').innerText = data.badge;
         } else if (iqCurrentIndex < iqQuestions.length) {
             showIqQuestion();
         } else {
-            showIqResult();
+            switchView('iq-result-view');
+            const calculatedIq = Math.round(100 + ((iqScore - 25) * 2));
+            document.getElementById('iq-score').innerText = calculatedIq;
+            
+            let evalText = `50問中 ${iqScore} 問に正解しました。<br><br>`;
+            if(calculatedIq >= 130) {
+                evalText += "メンサ（MENSA）入会レベルの極めて優れた知能指数です。高度な抽象概念の処理や、複雑な規則性の把握において圧倒的なパフォーマンスを発揮します。";
+            } else if(calculatedIq >= 110) {
+                evalText += "優秀な知能指数です。論理的組み立てや問題解決能力が高く、知的柔軟性に優れています。";
+            } else {
+                evalText += "平均的な知能指数です。一般的なロジックの処理において十分な安定性を持っています。毎日の脳トレでさらに流動性知能を研ぎ澄ますことが可能です。";
+            }
+            document.getElementById('iq-evaluation').innerHTML = evalText;
         }
-    }
-
-    function showIntervalScreen(count) {
-        switchView('iq-interval-view');
-        const data = intervalTemplates[count];
-        document.getElementById('interval-title').innerText = data.title;
-        document.getElementById('interval-message').innerHTML = data.msg;
-        document.getElementById('interval-badge').innerText = data.badge;
     }
 
     function resumeIqTest() {
@@ -273,35 +289,21 @@
         showIqQuestion();
     }
 
-    function showIqResult() {
-        switchView('iq-result-view');
-        const calculatedIq = Math.round(100 + ((iqScore - 25) * 2));
-        document.getElementById('iq-score').innerText = calculatedIq;
-        
-        let evalText = `50問中 ${iqScore} 問に正解しました。<br><br>`;
-        if(calculatedIq >= 130) {
-            evalText += "メンサ（MENSA）入会レベルの極めて優れた知能指数です。高度な抽象概念の処理や、複雑な規則性の把握において圧倒的なパフォーマンスを発揮します。";
-        } else if(calculatedIq >= 110) {
-            evalText += "優秀な知能指数です。論理的組み立てや問題解決能力が高く、知的柔軟性に優れています。";
-        } else {
-            evalText += "平均的な知能指数です。一般的なロジックの処理において十分な安定性を持っています。毎日の脳トレでさらに流動性知能を研ぎ澄ますことが可能です。";
-        }
-        document.getElementById('iq-evaluation').innerHTML = evalText;
-    }
-
-    // ==================== 脳トレ ロジック ====================
+    // ==================== 脳トレ処理 ====================
     function startBrainGame() {
         brainCurrentQuestion = 1;
         brainUserResponse = "";
         switchView('brain-game-view');
         brainStartTime = performance.now();
+        if (brainTimerInterval) clearInterval(brainTimerInterval);
         brainTimerInterval = setInterval(updateBrainTimer, 100);
         generateBrainQuestion();
     }
 
     function updateBrainTimer() {
         const elapsed = (performance.now() - brainStartTime) / 1000;
-        document.getElementById('brain-timer').innerText = elapsed.toFixed(1);
+        const timerEl = document.getElementById('brain-timer');
+        if (timerEl) timerEl.innerText = elapsed.toFixed(1);
     }
 
     function generateBrainQuestion() {
@@ -323,7 +325,6 @@
         document.getElementById('brain-progress').innerText = brainCurrentQuestion;
     }
 
-    // デバイス固有のキー処理
     function inputNum(val) {
         if (val === 'C') {
             brainUserResponse = "";
@@ -334,32 +335,43 @@
     }
 
     function checkAnswer() {
+        const panel = document.getElementById('brain-panel');
+        
+        // 入力値が空欄のままEnterを押した場合のデッドロック回避
+        if (brainUserResponse === "") {
+            triggerFlashPenalty(panel);
+            return;
+        }
+
         if (parseInt(brainUserResponse) === brainCorrectAnswer) {
             brainCurrentQuestion++;
             if (brainCurrentQuestion <= 20) {
                 generateBrainQuestion();
             } else {
-                endBrainGame();
+                clearInterval(brainTimerInterval);
+                const finalTime = ((performance.now() - brainStartTime) / 1000).toFixed(1);
+                switchView('brain-result-view');
+                document.getElementById('brain-final-time').innerText = `${finalTime} 秒`;
+
+                let brainAge = 20;
+                if (finalTime > 20) brainAge = Math.round(20 + (finalTime - 20) * 1.5);
+                if (brainAge > 80) brainAge = 80;
+                document.getElementById('brain-age-eval').innerText = `あなたの脳年齢は【 ${brainAge} 歳 】です。`;
             }
         } else {
+            // お手付き・誤答時の処理（視覚ペナルティを伴う）
             brainUserResponse = "";
             document.getElementById('formula').innerText = brainFormulaText;
+            triggerFlashPenalty(panel);
         }
     }
 
-    function endBrainGame() {
-        clearInterval(brainTimerInterval);
-        const finalTime = ((performance.now() - brainStartTime) / 1000).toFixed(1);
-        switchView('brain-result-view');
-        document.getElementById('brain-final-time').innerText = `${finalTime} 秒`;
-
-        let brainAge = 20;
-        if (finalTime > 20) {
-            brainAge = Math.round(20 + (finalTime - 20) * 1.5);
+    function triggerFlashPenalty(element) {
+        if (element) {
+            element.classList.remove('flash-error');
+            void element.offsetWidth; // 画面リフローを発生させアニメーションを即時再トリガー
+            element.classList.add('flash-error');
         }
-        if (brainAge > 80) brainAge = 80;
-        
-        document.getElementById('brain-age-eval').innerText = `あなたの脳年齢は【 ${brainAge} 歳 】です。`;
     }
 </script>
 </body>
