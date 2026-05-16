@@ -55,7 +55,7 @@
         .puzzle-text {
             font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
             font-size: 22px; font-weight: bold; line-height: 1.8; letter-spacing: 2px;
-            text-align: left; white-space: pre; display: inline-block; margin: 0 auto;
+            text-align: left; display: inline-block; margin: 0 auto;
         }
 
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -284,14 +284,14 @@
         angles.forEach(angle => { ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle)); ctx.stroke(); });
         ctx.fillStyle = '#8b949e'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         stats.forEach((stat, i) => { const x = cx + (r + 15) * Math.cos(angles[i]); const y = cy + (r + 15) * Math.sin(angles[i]); ctx.fillText(stat.label, x, y); });
+        
         ctx.fillStyle = 'rgba(255, 85, 255, 0.3)'; ctx.strokeStyle = '#ff55ff'; ctx.lineWidth = 2; ctx.beginPath();
         stats.forEach((stat, i) => {
             const radius = r * (stat.val / 99); const x = cx + radius * Math.cos(angles[i]); const y = cy + radius * Math.sin(angles[i]);
             if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         });
         ctx.closePath(); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = '#ffffff';
-        stats.forEach((stat, i) => { const radius = r * (stat.val / 99); const x = cx + radius * Math.cos(angles[i]); const y = cy + radius * Math.sin(angles[i]); ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill(); });
+        // 頂点の白ドット描画を削除（潰れ防止）
     }
 
     // ==================== グローバル制御 ====================
@@ -304,7 +304,6 @@
     function abortGame() { if (brainTimerInterval) clearInterval(brainTimerInterval); switchView('menu-view'); }
 
     // ==================== 厳密設計されたIQテスト全50問 ====================
-    // 構成: [1-10]基礎 [11-20]2Dマトリクス [21-30]数学的数列(素数/フィボ等) [31-40]高度シフト [41-50]極限抽象XOR・独立移動
     const actualIqQuestions = [
         // --- 序盤 1〜10 (基礎的法則・ウェイト1.0) ---
         { puzzle: "◯　→　△　→　□　→　？", options: ["◯", "△", "□", "☆"], correct: 3, exp: "辺の数が「円(0)→三画→四角」と増えるため、次は星型(多角形)が入ります。" },
@@ -316,14 +315,32 @@
         { puzzle: "🔴　→　🔴🔴　→　🔴🔴🔴　→　？", options: ["🔴", "🔴🔴", "🔴🔴🔴", "🔴🔴🔴🔴"], correct: 3, exp: "記号の数が1つずつ純増しています。" },
         { puzzle: "➖　＋　◯　＝　⨁\n✖️　＋　◯　＝　？", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1, exp: "線を丸に重ね合わせる合成規則です。バツ印を入れると「⊗」になります。" },
         { puzzle: "🌗　→　🌑　→　🌓　→　🌕　→　？", options: ["🌗", "🌑", "🌓", "🌕"], correct: 0, exp: "月の満ち欠けが一定の周期で右回りに循環しています。" },
-        { puzzle: "👆　→　👉　→　👇　→　？", options: ["👈", "👉", "👆", "👇"], correct: 0, exp: "指の向きが時計回りに90度ずつ回転しています。（ロジック修正済）" },
+        { puzzle: "👆　→　👉　→　👇　→　？", options: ["👈", "👉", "👆", "👇"], correct: 0, exp: "指の向きが時計回りに90度ずつ回転しています。" },
 
         // --- 中盤 11〜20 (2次元・反転マトリクス・ウェイト1.5) ---
         { puzzle: "🔺🔴　｜　⬜🔴\n🔺🔵　｜　？", options: ["⬜🔴", "🔺🔴", "⬜🔵", "🔺🔵"], correct: 2, exp: "縦の列は同じ色、横の行は同じ形状が並ぶマトリクスです。" },
         { puzzle: "⬛　⬜　⬛\n⬜　⬛　⬜\n⬛　⬜　？", options: ["⬛", "⬜", "🔷", "🔸"], correct: 0, exp: "白と黒が交互に並ぶチェス盤模様の補完です。" },
         { puzzle: "🕒　→　⑥　→　⑨　→　？", options: ["🕒", "⑥", "⑨", "⑫"], correct: 3, exp: "時間が3時間ずつ等間隔で進んでいます。" },
         { puzzle: "⭐⭐🌙　→　⭐⭐⭐　→　⭐⭐⭐⭐　→　？", options: ["⭐⭐⭐⭐⭐", "⭐⭐⭐⭐🌙", "⭐⭐⭐🌙🌙", "🌙🌙🌙🌙🌙"], correct: 0, exp: "星が1つ増え、月が1つ減って消滅しています。" },
-        { puzzle: "［🔴］　→　（⬛）　→　［🔺］　→　？", options: ["［🌟］", "（🌟）", "［🟢］", "（🔴）"], correct: 3, exp: "外枠が［］と（）で交互に入れ替わり、中身が変化しています。" },
+        
+        // CSS Gridによる図形切り取り問題（第15問）
+        { 
+            puzzle: `<div style="display:grid; grid-template-columns:repeat(3, 40px); grid-template-rows:repeat(3, 40px); border:1px solid #555; margin:0 auto; width:fit-content; background:#000;">
+                <div style="background:#c9d1d9;"></div><div style="background:#0d1117;"></div><div style="background:#c9d1d9;"></div>
+                <div style="background:#0d1117;"></div><div style="background:#c9d1d9;"></div><div style="background:#0d1117;"></div>
+                <div style="background:#c9d1d9;"></div><div style="background:#0d1117;"></div>
+                <div style="background:#161b22; display:flex; align-items:center; justify-content:center; color:#ff9900; font-size:24px; font-weight:bold; border:2px dashed #ff9900;">？</div>
+            </div><div style="font-size:14px; color:#8b949e; text-align:center; margin-top:10px;">図形の欠損</div>`, 
+            options: [
+                `<div style="width:30px; height:30px; background:#c9d1d9; border:1px solid #555; margin:0 auto;"></div>`, 
+                `<div style="width:30px; height:30px; background:#0d1117; border:1px solid #555; margin:0 auto;"></div>`, 
+                `<div style="width:30px; height:30px; background:#8b949e; border:1px solid #555; margin:0 auto;"></div>`, 
+                `<div style="width:30px; height:30px; background:linear-gradient(45deg, #c9d1d9 50%, #0d1117 50%); border:1px solid #555; margin:0 auto;"></div>`
+            ], 
+            correct: 0, 
+            exp: "全体が白と黒の市松模様を形成しています。規則性に従うと、右下の欠損部分には「白」が入ります。" 
+        },
+
         { puzzle: "🫱　→　🫲　→　🫱　→　？", options: ["🫱", "🫲", "👆", "👇"], correct: 1, exp: "手の向きが左右反転で交互に繰り返されています。" },
         { puzzle: "🔶　→　🔶🔶🔶　→　🔶🔶🔶🔶🔶　→　？", options: ["６個", "７個", "８個", "１個"], correct: 1, exp: "要素の数が奇数（1,3,5）で増加しているため、次は7個です。" },
         { puzzle: "🔵🔵🔵　→　🔵🔵　→　🔵　→　？", options: ["なし", "🔵", "🔴", "🔳"], correct: 0, exp: "個数が3→2→1と減少しているため、最後は0(消滅)になります。" },
@@ -356,15 +373,15 @@
 
         // --- 最終盤 41〜50 (超難度・完全抽象ロジック・ウェイト3.0) ---
         { puzzle: "▲△△　→　△▲△　→　△△▲　→　？", options: ["▲△△", "△▲△", "△△▲", "▲▲▲"], correct: 0, exp: "黒い三角が右へ1マスずつ移動し、端に到達すると左端へループします。" },
-        { puzzle: "（規則：重なると色が反転する）\n⬛⬜⬛ ＋ ⬜⬛⬜ ＝ ？", options: ["⬛⬜⬛", "⬜⬛⬜", "⬛⬛⬛", "⬜⬜⬜"], correct: 2, exp: "すべて異なる色が重なるため、全てが黒(または全て白)に統一される排他的論理和(XOR)です。" },
+        { puzzle: "（規則：重なると色が反転する）<br>⬛⬜⬛ ＋ ⬜⬛⬜ ＝ ？", options: ["⬛⬜⬛", "⬜⬛⬜", "⬛⬛⬛", "⬜⬜⬜"], correct: 2, exp: "すべて異なる色が重なるため、全てが黒(または全て白)に統一される排他的論理和(XOR)です。" },
         { puzzle: "⬆️🔴　→　➡️🔵　→　⬇️🟢　→　？", options: ["⬅️🟡", "⬅️🔴", "⬆️🟢", "⬇️🔵"], correct: 0, exp: "矢印が時計回りに90度回転すると同時に、色も別の色へシフトする二重規則です。" },
-        { puzzle: "🔳🔳🔲 ＋ 🔲🔳🔳 ＝ 🔳🔲🔳\n🔳🔲🔳 ＋ 🔳🔲🔳 ＝ ？", options: ["🔲🔲🔲", "🔳🔳🔳", "🔳🔲🔳", "🔲🔳🔲"], correct: 0, exp: "同じ図形同士を足すと「🔲」になり、違う図形だと「🔳」になる論理演算。全く同じものを足すため全て「🔲」になります。" },
+        { puzzle: "🔳🔳🔲 ＋ 🔲🔳🔳 ＝ 🔳🔲🔳<br>🔳🔲🔳 ＋ 🔳🔲🔳 ＝ ？", options: ["🔲🔲🔲", "🔳🔳🔳", "🔳🔲🔳", "🔲🔳🔲"], correct: 0, exp: "同じ図形同士を足すと「🔲」になり、違う図形だと「🔳」になる論理演算。全く同じものを足すため全て「🔲」になります。" },
         { puzzle: "↗️　→　↘️　→　↙️　→　？", options: ["↖️", "↗️", "↘️", "↙️"], correct: 0, exp: "斜め矢印が時計回りに90度ずつ回転しています。" },
-        { puzzle: "⚫⚪⚪\n⚪⚫⚪\n⚪⚪⚫\n　↓\n⚪⚫⚪\n⚪⚪⚫\n⚫⚪⚪\n　↓\n？", options: ["⚪⚪⚫\n⚫⚪⚪\n⚪⚫⚪", "⚫⚪⚪\n⚪⚫⚪\n⚪⚪⚫", "⚪⚪⚪\n⚫⚫⚫\n⚪⚪⚪", "⚫⚫⚫\n⚪⚪⚪\n⚫⚫⚫"], correct: 0, exp: "黒い点が右下斜めに向かって移動し、枠外に出ると反対側から現れる(トーラス状の)2次元シフトです。" },
+        { puzzle: "⚫⚪⚪<br>⚪⚫⚪<br>⚪⚪⚫<br>　↓<br>⚪⚫⚪<br>⚪⚪⚫<br>⚫⚪⚪<br>　↓<br>？", options: ["⚪⚪⚫<br>⚫⚪⚪<br>⚪⚫⚪", "⚫⚪⚪<br>⚪⚫⚪<br>⚪⚪⚫", "⚪⚪⚪<br>⚫⚫⚫<br>⚪⚪⚪", "⚫⚫⚫<br>⚪⚪⚪<br>⚫⚫⚫"], correct: 0, exp: "黒い点が右下斜めに向かって移動し、枠外に出ると反対側から現れる(トーラス状の)2次元シフトです。" },
         { puzzle: "ＡＢＣ　→　ＢＣＤ　→　ＣＤＥ　→　？", options: ["ＤＥＦ", "ＥＦＧ", "ＣＢＡ", "ＤＣＢ"], correct: 0, exp: "アルファベット群全体が+1ずつアルファベット順にスライドしています。" },
-        { puzzle: "🔴　＋　🔵　＝　🟣\n🟡　＋　🔵　＝　🟢\n🔴　＋　🟡　＝　？", options: ["🧡", "🟤", "🖤", "⚪"], correct: 0, exp: "色彩のブレンドです。赤と黄を混ぜるとオレンジ（🧡）になります。" },
+        { puzzle: "🔴　＋　🔵　＝　🟣<br>🟡　＋　🔵　＝　🟢<br>🔴　＋　🟡　＝　？", options: ["🧡", "🟤", "🖤", "⚪"], correct: 0, exp: "色彩のブレンドです。赤と黄を混ぜるとオレンジ（🧡）になります。" },
         { puzzle: "⬜　→　🟩　→　⬛　→　？", options: ["⬜", "🟥", "🟦", "🟨"], correct: 0, exp: "白（光の全反射）から緑（中間色）、そして黒（全吸収）へと変化したのち、再び白に戻る明度のループです。" },
-        { puzzle: "（最終問題：規則の統合）\n🔺🔵　→　🔻🔴　→　🔺🔵　→　？", options: ["🔻🔴", "🔺🔴", "🔻🔵", "🔺🔵"], correct: 0, exp: "図形の上下反転と、色の青・赤入れ替えが同時に発生する完全なフリップロジックです。" }
+        { puzzle: "（最終問題：規則の統合）<br>🔺🔵　→　🔻🔴　→　🔺🔵　→　？", options: ["🔻🔴", "🔺🔴", "🔻🔵", "🔺🔵"], correct: 0, exp: "図形の上下反転と、色の青・赤入れ替えが同時に発生する完全なフリップロジックです。" }
     ];
 
     let iqCurrentIndex = 0, iqCorrectCount = 0, iqScoreRaw = 0, userIqSelections = [];
@@ -385,11 +402,12 @@
         document.getElementById('iq-progress-text').innerText = iqCurrentIndex + 1;
         document.getElementById('iq-progress-fill').style.width = `${((iqCurrentIndex + 1) / 50) * 100}%`;
         document.getElementById('iq-question-number').innerText = `第 ${iqCurrentIndex + 1} 問`;
-        document.getElementById('iq-question-title').innerText = q.puzzle;
+        document.getElementById('iq-question-title').innerHTML = q.puzzle;
         
         const optionsContainer = document.getElementById('iq-options'); optionsContainer.innerHTML = '';
         q.options.forEach((opt, index) => {
-            const btn = document.createElement('button'); btn.className = 'btn'; btn.style.marginBottom = '0'; btn.innerText = opt;
+            const btn = document.createElement('button'); btn.className = 'btn'; btn.style.marginBottom = '0'; 
+            btn.innerHTML = opt;
             btn.onclick = () => handleIqAnswer(index); optionsContainer.appendChild(btn);
         });
     }
@@ -401,7 +419,6 @@
 
         if (isCorrect) {
             iqCorrectCount++;
-            // 【新規】傾斜配点ロジック（0-9:1点, 10-19:1.5点, 20-29:2点, 30-39:2.5点, 40-49:3点 / 満点100点）
             const weight = Math.floor(iqCurrentIndex / 10) * 0.5 + 1.0;
             iqScoreRaw += weight;
         }
@@ -426,7 +443,6 @@
     function showIqResult() {
         switchView('iq-result-view');
         
-        // 【新規】厳密なIQ計算式（100点満点でIQ140、0点でIQ70とする線形補間）
         const calculatedIq = Math.round(70 + (iqScoreRaw / 100) * 70);
         document.getElementById('iq-score').innerText = calculatedIq;
         
@@ -450,9 +466,9 @@
                 const card = document.createElement('div'); card.className = 'review-card';
                 card.innerHTML = `
                     <div class="review-badge badge-wrong">第 ${record.questionNum} 問 (不正解)</div>
-                    <div style="font-family:monospace; font-size:16px; background:#0d1117; padding:10px; border-radius:6px; margin-bottom:8px; line-height:1.5; white-space:pre-wrap;">${record.puzzle}</div>
-                    <div style="margin-bottom:4px;">❌ あなたの解答: <b style="color:#f85149;">${record.options[record.selected]}</b></div>
-                    <div style="margin-bottom:10px;">⭕ 正しい正解: <b style="color:#2ea44f;">${record.options[record.correct]}</b></div>
+                    <div style="font-family:monospace; font-size:16px; background:#0d1117; padding:10px; border-radius:6px; margin-bottom:8px; line-height:1.5; white-space:pre-wrap; text-align:center;">${record.puzzle}</div>
+                    <div style="margin-bottom:4px; text-align:center;">❌ あなたの解答:<br><div style="margin-top:5px;">${record.options[record.selected]}</div></div>
+                    <div style="margin-bottom:10px; text-align:center;">⭕ 正しい正解:<br><div style="margin-top:5px;">${record.options[record.correct]}</div></div>
                     <div style="color:#8b949e; font-size:13px; border-top:1px solid #21262d; padding-top:8px;">💡 <b>解説:</b> ${record.exp}</div>
                 `;
                 reviewSection.appendChild(card);
