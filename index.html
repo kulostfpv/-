@@ -47,16 +47,16 @@
         
         .matrix-dummy-box {
             width: 100%; min-height: 180px; background: #090d13; border: 1px solid var(--border-color);
-            border-radius: 8px; margin: 15px 0; padding: 20px; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: var(--text-white);
+            border-radius: 8px; margin: 15px 0; padding: 20px 10px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: var(--text-white); overflow-x: auto;
         }
-        /* ズレ修正：等幅フォントと空白維持を厳格に指定 */
+        /* ズレ修正：折り返しを禁止し、文字幅を完全に固定する */
         .puzzle-text {
             font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-            font-size: 24px; font-weight: bold; line-height: 1.8; letter-spacing: 2px;
-            text-align: center; white-space: pre; overflow-x: auto; max-width: 100%;
+            font-size: 22px; font-weight: bold; line-height: 1.8; letter-spacing: 2px;
+            text-align: center; white-space: nowrap; 
         }
-        .puzzle-text span, .puzzle-text div { font-size: 24px; display: inline-block; vertical-align: middle; line-height: 1; }
+        .puzzle-text span, .puzzle-text div { display: inline-block; vertical-align: middle; line-height: 1; }
         
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .formula { font-size: 44px; font-weight: bold; color: var(--text-white); letter-spacing: 2px; margin: 20px 0; }
@@ -110,7 +110,7 @@
         </div>
         <div class="progress-bar"><div id="iq-progress-fill" class="progress-fill" style="background:var(--iq-color);"></div></div>
         <div class="panel" style="padding: 15px 15px 25px 15px;">
-            <p style="margin:0 0 10px 0; font-size:13px; color:#8b949e;">空白［ ？ ］に当てはまる規則的なパターンを選択してください</p>
+            <p style="margin:0 0 10px 0; font-size:13px; color:#8b949e;">空白の「？」に当てはまるパターンを選択してください</p>
             <div class="matrix-dummy-box">
                 <div style="font-size:13px; color:#8b949e; margin-bottom:12px;" id="iq-question-number">第 1 問</div>
                 <div class="puzzle-text" id="iq-question-title">問題内容</div>
@@ -143,7 +143,7 @@
     <div id="brain-start-view" class="view hidden">
         <h2 style="color: var(--brain-color); text-align:center;">毎日脳トレ：計算20</h2>
         <div class="panel">
-            <p style="line-height:1.6;">簡単な四則演算が連続して20問出題されます。<br>誤答時はペナルティ(+3秒)が加算されます。</p>
+            <p style="line-height:1.6;">簡単な四則演算が連続して20問出題されます。<br>誤答時はペナルティ(+2秒)が加算されます。</p>
             <p style="font-size:14px; color:#ff9900; margin-top:10px;">※ADVANCEDモードはテンキーがシャッフルされます。</p>
         </div>
         <button class="btn" style="background:var(--brain-color); color:#000; border:none; margin-bottom:12px;" onclick="startBrainGame(false)">NORMAL モードで開始</button>
@@ -204,62 +204,68 @@
         40: { title: "最高IQの領域へ挑戦中", msg: "ここからはメンサレベルの超難問が混ざります。あなたの限界を測定します。", badge: "🚀" }
     };
 
-    // ズレ修正：全角スペース「　」と全角数字「１，２」を徹底。難易度の波とジャンルを混在させた配列。
+    // ズレ修正：［？］を「？」に変更。各行の文字幅を完全に一致させてマトリクスを綺麗に揃える。
     const actualIqQuestions = [
-        { puzzle: "◯　→　△　→　□　→　［？］", options: ["◯", "△", "□", "☆"], correct: 3, exp: "辺の数が「円(0)→三画→四角」と増えるため、次は星型(多角形)が入ります。" },
-        { puzzle: "🔴　→　🔵　→　🟢　→　🔴　→　［？］", options: ["🔴", "🔵", "🟢", "🟡"], correct: 1, exp: "赤・青・緑の3色パターンがループしています。" },
-        { puzzle: "⬆️　→　➡️　→　⬇️　→　［？］", options: ["⬆️", "➡️", "⬇️", "⬅️"], correct: 3, exp: "矢印の向きが時計回りに90度ずつ回転しています。" },
-        { puzzle: "🟥　＝　🟦\n🔺　＝　［？］", options: ["🔻", "🔷", "🔹", "🔺"], correct: 1, exp: "上が「赤から青」への変化であるため、赤い三角に対応するのは青い図形です。" },
-        { puzzle: "左［👈］　右［👉］\n上［👆］　下［？］", options: ["👈", "👉", "👆", "👇"], correct: 3, exp: "空間的な対比です。上に対するのは下を指す手になります。" },
-        { puzzle: "⭐️　→　🌙　→　⭐️　→　🌙　→　［？］", options: ["⭐️", "🌙", "☀️", "🌀"], correct: 0, exp: "星と月が交互に配置される単純な交互規則です。" },
-        { puzzle: "１　２　３\n２　４　６\n３　６　［？］", options: ["７", "８", "９", "１２"], correct: 2, exp: "縦横の掛け算（九九）マトリクスです。3×3=9が入ります。" },
-        { puzzle: "🔴　→　🔴🔴　→　🔴🔴🔴　→　［？］", options: ["🔴", "🔴🔴", "🔴🔴🔴", "🔴🔴🔴🔴"], correct: 3, exp: "記号の数が1つずつ純増しています。" },
-        { puzzle: "➖　＋　◯　＝　⨁\n✖️　＋　◯　＝　［？］", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1, exp: "線を丸に重ね合わせる合成規則です。バツ印を入れると「⊗」になります。" },
-        { puzzle: "🌗　→　🌑　→　🌓　→　🌕　→　［？］", options: ["🌗", "🌑", "🌓", "🌕"], correct: 0, exp: "月の満ち欠けが一定の周期で右回りに循環しています。" },
+        { puzzle: "◯　→　△　→　□　→　？", options: ["◯", "△", "□", "☆"], correct: 3, exp: "辺の数が「円(0)→三画→四角」と増えるため、次は星型(多角形)が入ります。" },
+        { puzzle: "🔴　→　🔵　→　🟢　→　🔴　→　？", options: ["🔴", "🔵", "🟢", "🟡"], correct: 1, exp: "赤・青・緑の3色パターンがループしています。" },
+        { puzzle: "⬆️　→　➡️　→　⬇️　→　？", options: ["⬆️", "➡️", "⬇️", "⬅️"], correct: 3, exp: "矢印の向きが時計回りに90度ずつ回転しています。" },
+        { puzzle: "🟥　＝　🟦\n🔺　＝　？", options: ["🔻", "🔷", "🔹", "🔺"], correct: 1, exp: "上が「赤から青」への変化であるため、赤い三角に対応するのは青い図形です。" },
+        { puzzle: "左👈　右👉\n上👆　下？", options: ["👈", "👉", "👆", "👇"], correct: 3, exp: "空間的な対比です。上に対するのは下を指す手になります。" },
+        { puzzle: "⭐️　→　🌙　→　⭐️　→　🌙　→　？", options: ["⭐️", "🌙", "☀️", "🌀"], correct: 0, exp: "星と月が交互に配置される単純な交互規則です。" },
+        { puzzle: "１　２　３\n２　４　６\n３　６　？", options: ["７", "８", "９", "１２"], correct: 2, exp: "縦横の掛け算（九九）マトリクスです。3×3=9が入ります。" },
+        { puzzle: "🔴　→　🔴🔴　→　🔴🔴🔴　→　？", options: ["🔴", "🔴🔴", "🔴🔴🔴", "🔴🔴🔴🔴"], correct: 3, exp: "記号の数が1つずつ純増しています。" },
+        { puzzle: "➖　＋　◯　＝　⨁\n✖️　＋　◯　＝　？", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1, exp: "線を丸に重ね合わせる合成規則です。バツ印を入れると「⊗」になります。" },
+        { puzzle: "🌗　→　🌑　→　🌓　→　🌕　→　？", options: ["🌗", "🌑", "🌓", "🌕"], correct: 0, exp: "月の満ち欠けが一定の周期で右回りに循環しています。" },
         
-        { puzzle: "🔺🔴　｜　⬜🔴\n🔺🔵　｜　［？］", options: ["⬜🔴", "🔺🔴", "⬜🔵", "🔺🔵"], correct: 2, exp: "縦の列は同じ色、横の行は同じ形状が並ぶマトリクスです。" },
-        { puzzle: "⬆️🔴　→　➡️🔵　→　⬇️🟢　→　［？］", options: ["⬅️🔴", "⬅️🔵", "⬆️🔴", "⬇️🟡"], correct: 0, exp: "矢印は90度回転し、色は「赤→青→緑」の順でループしています。" },
-        { puzzle: "⬛　⬜　⬛\n⬜　⬛　⬜\n⬛　⬜　［？］", options: ["⬛", "⬜", "🔷", "🔸"], correct: 0, exp: "白と黒が交互に並ぶチェス盤模様の補完です。" },
-        { puzzle: "🕒　→　⑥　→　⑨　→　［？］", options: ["🕒", "⑥", "⑨", "⑫"], correct: 3, exp: "時間が3時間ずつ等間隔で進んでいます。" },
-        { puzzle: "⭐⭐🌙　→　⭐⭐⭐　→　⭐⭐⭐⭐　→　［？］", options: ["⭐⭐⭐⭐⭐", "⭐⭐⭐⭐🌙", "⭐⭐⭐🌙🌙", "🌙🌙🌙🌙🌙"], correct: 0, exp: "星が1つ増え、月が1つ減って消滅しています。" },
-        { puzzle: "🔴　＋　🔵　＝　🟣\n🟡　＋　🔵　＝　🟢\n🔴　＋　🟡　＝　［？］", options: ["🧡", "🟤", "🖤", "⚪"], correct: 0, exp: "色彩のブレンドです。赤と黄を混ぜるとオレンジになります。" },
-        { puzzle: "［🔴］　→　（⬛）　→　［🔺］　→　［？］", options: ["［🌟］", "（🌟）", "［🟢］", "（🔴）"], correct: 1, exp: "外枠が［］と（）で入れ替わり、中身が変化しています。" },
-        { puzzle: "🫱　→　🫲　→　🫱　→　［？］", options: ["🫱", "🫲", "👆", "👇"], correct: 1, exp: "手の向きが左右反転で交互に繰り返されています。" },
-        { puzzle: "🍏🍏🍏　＝　９\n🍎🍎　　＝　４\n🍊　　　＝　［？］", options: ["１", "２", "３", "０"], correct: 0, exp: "個数の2乗（3の2乗=9）が答えです。1の2乗は1になります。" },
-        { puzzle: "🔶　→　🔶🔶🔶　→　🔶🔶🔶🔶🔶　→　［？］", options: ["６個", "７個", "８個", "１個"], correct: 1, exp: "要素の数が奇数（1,3,5）で増加しているため、次は7個です。" },
+        { puzzle: "🔺🔴　｜　⬜🔴\n🔺🔵　｜　？", options: ["⬜🔴", "🔺🔴", "⬜🔵", "🔺🔵"], correct: 2, exp: "縦の列は同じ色、横の行は同じ形状が並ぶマトリクスです。" },
+        { puzzle: "⬆️🔴　→　➡️🔵　→　⬇️🟢　→　？", options: ["⬅️🔴", "⬅️🔵", "⬆️🔴", "⬇️🟡"], correct: 0, exp: "矢印は90度回転し、色は「赤→青→緑」の順でループしています。" },
+        { puzzle: "⬛　⬜　⬛\n⬜　⬛　⬜\n⬛　⬜　？", options: ["⬛", "⬜", "🔷", "🔸"], correct: 0, exp: "白と黒が交互に並ぶチェス盤模様の補完です。" },
+        { puzzle: "🕒　→　⑥　→　⑨　→　？", options: ["🕒", "⑥", "⑨", "⑫"], correct: 3, exp: "時間が3時間ずつ等間隔で進んでいます。" },
+        { puzzle: "⭐⭐🌙　→　⭐⭐⭐　→　⭐⭐⭐⭐　→　？", options: ["⭐⭐⭐⭐⭐", "⭐⭐⭐⭐🌙", "⭐⭐⭐🌙🌙", "🌙🌙🌙🌙🌙"], correct: 0, exp: "星が1つ増え、月が1つ減って消滅しています。" },
+        { puzzle: "🔴　＋　🔵　＝　🟣\n🟡　＋　🔵　＝　🟢\n🔴　＋　🟡　＝　？", options: ["🧡", "🟤", "🖤", "⚪"], correct: 0, exp: "色彩のブレンドです。赤と黄を混ぜるとオレンジになります。" },
+        { puzzle: "［🔴］　→　（⬛）　→　［🔺］　→　？", options: ["［🌟］", "（🌟）", "［🟢］", "（🔴）"], correct: 1, exp: "外枠が［］と（）で入れ替わり、中身が変化しています。" },
+        { puzzle: "🫱　→　🫲　→　🫱　→　？", options: ["🫱", "🫲", "👆", "👇"], correct: 1, exp: "手の向きが左右反転で交互に繰り返されています。" },
+        { puzzle: "🍏🍏🍏　＝　９\n🍎🍎　　＝　４\n🍊　　　＝　？", options: ["１", "２", "３", "０"], correct: 0, exp: "個数の2乗（3の2乗=9）が答えです。1の2乗は1になります。" },
+        { puzzle: "🔶　→　🔶🔶🔶　→　🔶🔶🔶🔶🔶　→　？", options: ["６個", "７個", "８個", "１個"], correct: 1, exp: "要素の数が奇数（1,3,5）で増加しているため、次は7個です。" },
 
-        { puzzle: "🔵🔵🔵　→　🔵🔵　→　🔵　→　［？］", options: ["空白(なし)", "🔵", "🔴", "🔳"], correct: 0, exp: "個数が3→2→1と減少しているため、最後は0(消滅)になります。" },
-        { puzzle: "◯🔴　→　⬜🔵　→　△🟢　→　［？］", options: ["☆🟡", "◯🟡", "⬜🔴", "△🔵"], correct: 0, exp: "形状と色の両方が新しいものへ遷移します。" },
-        { puzzle: "🟥　🔺　🟥\n🟦　🔹　🟦\n🟩　🟢　［？］", options: ["🟢", "🔺", "🟩", "🔷"], correct: 2, exp: "左右が同じ色でサンドイッチされる構造です。" },
-        { puzzle: "🔲　→　🔳　→　🔲　→　［？］", options: ["🔲", "🔳", "⬜", "⬛"], correct: 1, exp: "中心と外枠の色反転が交互に繰り返されています。" },
-        { puzzle: "１２：００　→　０１：３０　→　０３：００　→　［？］", options: ["04:00", "04:30", "05:00", "05:30"], correct: 1, exp: "1時間30分ずつ時間が順方向に進行しています。" },
-        { puzzle: "⭐　→　⭐⭐　→　⭐⭐⭐⭐　→　［？］", options: ["５個", "６個", "７個", "８個"], correct: 3, exp: "個数が「1→2→4」と2倍で増えているため、次は8個です。" },
-        { puzzle: "➕　➖　➗\n➖　➗　➕\n➗　➕　［？］", options: ["➕", "➖", "➗", "✖️"], correct: 1, exp: "縦横どの行・列を見ても記号が重複しない循環方格です。" },
-        { puzzle: "👍　→　☝️　→　👎　→　［？］", options: ["👉", "👈", "👆", "👇"], correct: 1, exp: "手のポーズが反時計回りに90度ずつ回転しています。" },
-        { puzzle: "Ａ１　→　Ｂ２　→　Ｃ３　→　［？］", options: ["Ｄ４", "Ｄ５", "Ｅ４", "Ｃ４"], correct: 0, exp: "アルファベットと数字が同時に進んでいます。" },
-        { puzzle: "🟢🔺　→　🔺🟢　→　🟢🔺　→　［？］", options: ["🟢🔺", "🔺🟢", "🟢🟢", "🔺🔺"], correct: 1, exp: "2つの要素の位置が左右交互に入れ替わっています。" },
+        { puzzle: "🔵🔵🔵　→　🔵🔵　→　🔵　→　？", options: ["空白(なし)", "🔵", "🔴", "🔳"], correct: 0, exp: "個数が3→2→1と減少しているため、最後は0(消滅)になります。" },
+        { puzzle: "◯🔴　→　⬜🔵　→　△🟢　→　？", options: ["☆🟡", "◯🟡", "⬜🔴", "△🔵"], correct: 0, exp: "形状と色の両方が新しいものへ遷移します。" },
+        { puzzle: "🟥　🔺　🟥\n🟦　🔹　🟦\n🟩　🟢　？", options: ["🟢", "🔺", "🟩", "🔷"], correct: 2, exp: "左右が同じ色でサンドイッチされる構造です。" },
+        { puzzle: "🔲　→　🔳　→　🔲　→　？", options: ["🔲", "🔳", "⬜", "⬛"], correct: 1, exp: "中心と外枠の色反転が交互に繰り返されています。" },
+        { puzzle: "１２：００　→　０１：３０　→　０３：００　→　？", options: ["04:00", "04:30", "05:00", "05:30"], correct: 1, exp: "1時間30分ずつ時間が順方向に進行しています。" },
         
-        { puzzle: "🟪　🟫　🟪\n🟫　🟪　🟫\n🟪　［？］🟪", options: ["🟪", "🟫", "⬛", "⬜"], correct: 1, exp: "格子状に色が配置されるマトリクスの中心補完です。" },
-        { puzzle: "◯　　△　　□\n□　　◯　　△\n△　　□　　［？］", options: ["◯", "△", "□", "☆"], correct: 0, exp: "各行・列に「◯」「△」「□」が重複せず配置される規則です。" },
-        { puzzle: "📦　→　📭　→　📦　→　［？］", options: ["📦", "📭", "📬", "📮"], correct: 1, exp: "箱型とポスト型が交互に出現する基礎ループです。" },
-        { puzzle: "◯　→　☯️　→　◯　→　［？］", options: ["◯", "☯️", "☸️", "☮️"], correct: 1, exp: "図形のシンボル性が交互に切り替わっています。" },
-        { puzzle: "🔳🔳🔲　＋　🔲🔳🔳　＝　🔳🔲🔳\n（規則：不一致の箇所＝🔳）\n🔳🔲🔳　＋　🔳🔲🔳　＝　［？］", options: ["🔲🔲🔲", "🔳🔳🔳", "🔳🔲🔳", "🔲🔳🔲"], correct: 0, exp: "排他的論理和(XOR)演算です。同じもの同士を重ねると消えるため、すべて🔲になります。" },
-        { puzzle: "３　＝　🔺\n４　＝　⬜\n５　＝　⬠\n６　＝　［？］", options: ["◯", "🔺", "⬡", "🌟"], correct: 2, exp: "数字がそのまま図形の角の数を表しているため、6＝六角形(⬡)です。" },
-        { puzzle: "１２３　→　２３１　→　３１２　→　［？］", options: ["１２３", "２３１", "３１２", "３２１"], correct: 0, exp: "数字が左へローテーション移動しているため、元に戻ります。" },
-        { puzzle: "🔵　🔴　🟢\n🟢　🔵　🔴\n🔴　🟢　［？］", options: ["🔵", "🔴", "🟢", "🟡"], correct: 0, exp: "色が縦横で重複しないグリッドローテーションです。" },
-        { puzzle: "🔺　＋　🔻　＝　⏳\n▶️　＋　◀️　＝　［？］", options: ["🎀", "🌟", "🍀", "💎"], correct: 0, exp: "2つの三角形を結合させた形状類推です。合わせるとリボン(🎀)になります。" },
-        { puzzle: "１０１０　→　０１０１　→　１０１０　→　［？］", options: ["１０１０", "０１０１", "１１１１", "００００"], correct: 1, exp: "0と1のビット反転が交互に行われています。" },
+        // 修正箇所：問28（星の数の推移を視覚的に明確化）
+        { puzzle: "⭐　→　⭐⭐⭐　→　⭐⭐⭐⭐⭐　→　？", options: ["⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐⭐⭐"], correct: 2, exp: "星の数が「1個→3個→5個」と2つずつ増えているため、次は7個です。" },
+        
+        { puzzle: "➕　➖　➗\n➖　➗　➕\n➗　➕　？", options: ["➕", "➖", "➗", "✖️"], correct: 1, exp: "縦横どの行・列を見ても記号が重複しない循環方格です。" },
+        { puzzle: "👍　→　☝️　→　👎　→　？", options: ["👉", "👈", "👆", "👇"], correct: 1, exp: "手のポーズが反時計回りに90度ずつ回転しています。" },
+        { puzzle: "Ａ１　→　Ｂ２　→　Ｃ３　→　？", options: ["Ｄ４", "Ｄ５", "Ｅ４", "Ｃ４"], correct: 0, exp: "アルファベットと数字が同時に進んでいます。" },
+        { puzzle: "🟢🔺　→　🔺🟢　→　🟢🔺　→　？", options: ["🟢🔺", "🔺🟢", "🟢🟢", "🔺🔺"], correct: 1, exp: "2つの要素の位置が左右交互に入れ替わっています。" },
+        
+        { puzzle: "🟪　🟫　🟪\n🟫　🟪　🟫\n🟪　？　🟪", options: ["🟪", "🟫", "⬛", "⬜"], correct: 1, exp: "格子状に色が配置されるマトリクスの中心補完です。" },
+        { puzzle: "◯　△　□\n□　◯　△\n△　□　？", options: ["◯", "△", "□", "☆"], correct: 0, exp: "各行・列に「◯」「△」「□」が重複せず配置される規則です。" },
+        { puzzle: "📦　→　📭　→　📦　→　？", options: ["📦", "📭", "📬", "📮"], correct: 1, exp: "箱型とポスト型が交互に出現する基礎ループです。" },
+        { puzzle: "◯　→　☯️　→　◯　→　？", options: ["◯", "☯️", "☸️", "☮️"], correct: 1, exp: "図形のシンボル性が交互に切り替わっています。" },
+        { puzzle: "🔳🔳🔲　＋　🔲🔳🔳　＝　🔳🔲🔳\n（規則：不一致＝🔳）\n🔳🔲🔳　＋　🔳🔲🔳　＝　？", options: ["🔲🔲🔲", "🔳🔳🔳", "🔳🔲🔳", "🔲🔳🔲"], correct: 0, exp: "排他的論理和(XOR)演算です。同じもの同士を重ねると消えるため、すべて🔲になります。" },
+        { puzzle: "３　＝　🔺\n４　＝　⬜\n５　＝　⬠\n６　＝　？", options: ["◯", "🔺", "⬡", "🌟"], correct: 2, exp: "数字がそのまま図形の角の数を表しているため、6＝六角形(⬡)です。" },
+        
+        // 修正箇所：問39（数字のローテーションを視覚的なトランプ記号へ変更し直感的に）
+        { puzzle: "♠️♡♣️　→　♡♣️♠️　→　♣️♠️♡　→　？", options: ["♠️♡♣️", "♡♣️♠️", "♣️♠️♡", "♠️♣️♡"], correct: 0, exp: "記号が左に一つずつスライド移動しています。3回移動で元に戻ります。" },
+        
+        { puzzle: "🔵　🔴　🟢\n🟢　🔵　🔴\n🔴　🟢　？", options: ["🔵", "🔴", "🟢", "🟡"], correct: 0, exp: "色が縦横で重複しないグリッドローテーションです。" },
+        { puzzle: "🔺　＋　🔻　＝　⏳\n▶️　＋　◀️　＝　？", options: ["🎀", "🌟", "🍀", "💎"], correct: 0, exp: "2つの三角形を結合させた形状類推です。合わせるとリボン(🎀)になります。" },
+        { puzzle: "１０１０　→　０１０１　→　１０１０　→　？", options: ["１０１０", "０１０１", "１１１１", "００００"], correct: 1, exp: "0と1のビット反転が交互に行われています。" },
 
-        { puzzle: "⭐　🌙　☀️\n☀️　⭐　🌙\n🌙　☀️　［？］", options: ["⭐", "🌙", "☀️", "☁️"], correct: 0, exp: "天体マークが右へスライドしながら循環しています。" },
-        { puzzle: "２　，　４　，　８\n３　，　９　，　２７\n４　，　１６，　［？］", options: ["３２", "４８", "６４", "８０"], correct: 2, exp: "各行の累乗数列です。4×4×4＝64が入ります。" },
-        { puzzle: "🖤　🤍　🖤\n🤍　🖤　🤍\n🖤　🤍　［？］", options: ["🖤", "🤍", "🔷", "🔶"], correct: 0, exp: "縦横の配列において色が反転対称となるパターンです。" },
-        { puzzle: "２，３，５，７，１１，［？］", options: ["１２", "１３", "１４", "１５"], correct: 1, exp: "「素数」が順番に並んでいます。11の次は13です。" },
-        { puzzle: "１→２→３→５→８→［？］", options: ["１０", "１１", "１２", "１３"], correct: 3, exp: "フィボナッチ数列。前の2つの数字の和が次になるため、5+8=13になります。" },
-        { puzzle: "１→２→４→７→１１→１６→［？］", options: ["２０", "２１", "２２", "２３"], correct: 2, exp: "足される数が「+1, +2, +3...」と増える階差数列です。最後は16+6=22です。" },
-        { puzzle: "◯　＝　０\n🔺　＝　３\n⬜　＝　４\n⭐　＝　［？］", options: ["５", "６", "１０", "１２"], correct: 2, exp: "線の接続端の数のロジックです。星(⭐)の尖った角は10個あります。" },
-        { puzzle: "↗️　→　↘️　→　↙️　→　［？］", options: ["↖️", "↗️", "↘️", "↙️"], correct: 0, exp: "斜め矢印が時計回りに90度ずつ回転しています。" },
-        { puzzle: "🔴＋🔵＝３\n🔵＋🟢＝５\n🟢＋🔴＝４\n🔴＋🔵＋🟢＝［？］", options: ["５", "６", "７", "８"], correct: 1, exp: "連立方程式。すべて足すと 2×(🔴+🔵+🟢)=12 となり、2で割ると6になります。" },
-        { puzzle: "１　２　３\n２　３　１\n３　１　［？］", options: ["１", "２", "３", "４"], correct: 1, exp: "各行で「1,2,3」が使われる単純な数独ルールです。" }
+        { puzzle: "⭐　🌙　☀️\n☀️　⭐　🌙\n🌙　☀️　？", options: ["⭐", "🌙", "☀️", "☁️"], correct: 0, exp: "天体マークが右へスライドしながら循環しています。" },
+        { puzzle: "２　，　４　，　８\n３　，　９　，　２７\n４　，　１６，　？", options: ["３２", "４８", "６４", "８０"], correct: 2, exp: "各行の累乗数列です。4×4×4＝64が入ります。" },
+        { puzzle: "🖤　🤍　🖤\n🤍　🖤　🤍\n🖤　🤍　？", options: ["🖤", "🤍", "🔷", "🔶"], correct: 0, exp: "縦横の配列において色が反転対称となるパターンです。" },
+        { puzzle: "２，３，５，７，１１，？", options: ["１２", "１３", "１４", "１５"], correct: 1, exp: "「素数」が順番に並んでいます。11の次は13です。" },
+        { puzzle: "１→２→３→５→８→？", options: ["１０", "１１", "１２", "１３"], correct: 3, exp: "フィボナッチ数列。前の2つの数字の和が次になるため、5+8=13になります。" },
+        { puzzle: "１→２→４→７→１１→１６→？", options: ["２０", "２１", "２２", "２３"], correct: 2, exp: "足される数が「+1, +2, +3...」と増える階差数列です。最後は16+6=22です。" },
+        { puzzle: "◯　＝　０\n🔺　＝　３\n⬜　＝　４\n⭐　＝　？", options: ["５", "６", "１０", "１２"], correct: 2, exp: "線の接続端の数のロジックです。星(⭐)の尖った角は10個あります。" },
+        { puzzle: "↗️　→　↘️　→　↙️　→　？", options: ["↖️", "↗️", "↘️", "↙️"], correct: 0, exp: "斜め矢印が時計回りに90度ずつ回転しています。" },
+        { puzzle: "🔴＋🔵＝３\n🔵＋🟢＝５\n🟢＋🔴＝４\n🔴＋🔵＋🟢＝？", options: ["５", "６", "７", "８"], correct: 1, exp: "連立方程式。すべて足すと 2×(🔴+🔵+🟢)=12 となり、2で割ると6になります。" },
+        { puzzle: "１　２　３\n２　３　１\n３　１　？", options: ["１", "２", "３", "４"], correct: 1, exp: "各行で「1,2,3」が使われる単純な数独ルールです。" }
     ];
 
     let brainCurrentQuestion = 1;
@@ -269,7 +275,7 @@
     let brainStartTime;
     let brainTimerInterval;
     let isAdvancedMode = false;
-    let penaltySeconds = 0; // ペナルティ秒数管理
+    let penaltySeconds = 0;
 
     function switchView(viewId) {
         document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
@@ -386,7 +392,7 @@
         isAdvancedMode = advanced;
         brainCurrentQuestion = 1;
         brainUserResponse = "";
-        penaltySeconds = 0; // ペナルティリセット
+        penaltySeconds = 0;
         
         const indicator = document.getElementById('mode-indicator');
         if (isAdvancedMode) {
@@ -480,9 +486,9 @@
     function checkAnswer() {
         const panel = document.getElementById('brain-panel');
         
+        // 【修正】空欄の場合はペナルティなしで単にスルーする（ゴーストクリック対策）
         if (brainUserResponse === "") {
-            triggerFlashPenalty(panel);
-            return;
+            return; 
         }
 
         if (parseInt(brainUserResponse) === brainCorrectAnswer) {
@@ -502,18 +508,22 @@
                 }
                 document.getElementById('brain-final-time').innerHTML = timeText;
 
+                // 【修正】納得感のある年齢算出アルゴリズムへ緩和
                 let brainAge = 20;
                 if (isAdvancedMode) {
-                    if (finalTime > 30) brainAge = Math.round(20 + (finalTime - 30) * 1.2);
+                    // ADVANCED: 36秒を基準とし、超過1秒につき1歳プラス
+                    if (finalTime > 36) brainAge = Math.round(20 + (finalTime - 36) * 1.0);
                 } else {
-                    if (finalTime > 22) brainAge = Math.round(20 + (finalTime - 22) * 1.2);
+                    // NORMAL: 24秒を基準とし、超過1秒につき1歳プラス
+                    if (finalTime > 24) brainAge = Math.round(20 + (finalTime - 24) * 1.0);
                 }
                 
                 if (brainAge > 80) brainAge = 80;
                 document.getElementById('brain-age-eval').innerText = `あなたの脳年齢は【 ${brainAge} 歳 】です。`;
             }
         } else {
-            penaltySeconds += 3;
+            // 【修正】ペナルティを3秒から2秒へ緩和
+            penaltySeconds += 2;
             brainUserResponse = "";
             document.getElementById('formula').innerText = brainFormulaText;
             triggerFlashPenalty(panel);
