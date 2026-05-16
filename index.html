@@ -40,8 +40,8 @@
             color: var(--text-white); font-size: 18px; font-weight: bold; padding: 15px;
             cursor: pointer; margin-bottom: 12px; transition: 0.2s; width: 100%;
             user-select: none; -webkit-tap-highlight-color: transparent;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; line-height: 1.4;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 60px;
         }
         .btn:active { opacity: 0.8; }
         .btn-danger { background: #4c1d1d; border-color: #f85149; color: #ffa3a3; }
@@ -307,14 +307,13 @@
 
     // ==================== 厳密設計されたIQテスト全50問 ====================
     const actualIqQuestions = [
-        // --- 序盤 1〜10 (基礎的法則・投影法含む) ---
+        // --- 序盤 1〜10 ---
         { puzzle: "◯　→　△　→　□　→　？", options: ["◯", "△", "□", "☆"], correct: 3, exp: "辺の数が「円(0)→三画→四角」と増えるため、次は星型(多角形)が入ります。" },
         { puzzle: "🔴　→　🔵　→　🟢　→　🔴　→　？", options: ["🔴", "🔵", "🟢", "🟡"], correct: 1, exp: "赤・青・緑の3色パターンがループしています。" },
         { puzzle: "⬆️　→　➡️　→　⬇️　→　？", options: ["⬆️", "➡️", "⬇️", "⬅️"], correct: 3, exp: "矢印の向きが時計回りに90度ずつ回転しています。" },
         { puzzle: "🟥　→　🟦<br>🔴　→　？", options: ["🔺", "🔷", "🔵", "🟡"], correct: 2, exp: "上が「赤から青」への変化であるため、赤い丸に対応するのは青い丸です。" },
         { puzzle: "左👈　右👉<br>上👆　下？", options: ["👈", "👉", "👆", "👇"], correct: 3, exp: "空間的な対比です。上に対するのは下を指す手になります。" },
         
-        // 高度化されたSVGロールシャッハ図形1
         { 
             puzzle: `<svg viewBox="-50 -50 100 100" style="width:160px; height:160px; fill:#c9d1d9; margin:10px auto; display:block; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));">
                        <defs>
@@ -333,12 +332,9 @@
         },
 
         { puzzle: "🔴　→　🔴🔴　→　🔴🔴🔴　→　？", options: ["🔴", "🔴🔴", "🔴🔴🔴", "🔴🔴🔴🔴"], correct: 3, exp: "記号の数が1つずつ純増しています。" },
-        
-        // 図形合成ロジック修正
         { puzzle: "➕　＋　◯　＝　⨁<br>✖️　＋　◯　＝　？", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1, exp: "図形をそのまま重ね合わせる合成規則です。「＋」と「◯」で「⨁」になるため、「✖️」と「◯」を重ねると「⊗」になります。" },
         { puzzle: "🌗　→　🌑　→　🌓　→　🌕　→　？", options: ["🌗", "🌑", "🌓", "🌕"], correct: 0, exp: "月の満ち欠けが一定の周期で右回りに循環しています。" },
         
-        // 高度化されたSVGロールシャッハ図形2
         { 
             puzzle: `<svg viewBox="-50 -50 100 100" style="width:160px; height:160px; fill:#8b949e; margin:10px auto; display:block; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));">
                        <defs>
@@ -357,13 +353,9 @@
             exp: "【投影法テスト】心理テストに使われる有機的図形です。論理的な正解はありません。あなたの創造性を評価しました。" 
         },
 
-        // --- 中盤 11〜20 (2次元マトリクス・図形欠損パズル) ---
+        // --- 中盤 11〜20 ---
         { puzzle: "🔺🔴　｜　⬜🔴<br>🔺🔵　｜　？", options: ["⬜🔴", "🔺🔴", "⬜🔵", "🔺🔵"], correct: 2, exp: "縦の列は同じ色、横の行は同じ形状が並ぶマトリクスです。" },
-        
-        // 時計問題の難易度上昇
-        { puzzle: "🕒　→　⑥　→　🕘　→　？", options: ["🕒", "🕕", "🕘", "🕛"], correct: 3, exp: "時間が3時間ずつ進んでいます（3時→6時→9時）。9時の次は12時（🕛）です。" },
-        
-        // 星と月のロジック可視化
+        { puzzle: "🕒　→　🕕　→　🕘　→　？", options: ["🕒", "🕕", "🕘", "🕛"], correct: 3, exp: "時間が3時間ずつ進んでいます（3時→6時→9時）。9時の次は12時（🕛）です。" },
         { puzzle: "⭐🌙🌙　→　⭐⭐🌙　→　⭐⭐⭐　→　？", options: ["⭐⭐⭐⭐", "⭐⭐⭐⭐🌙", "🌙🌙🌙🌙", "⭐⭐⭐⭐⭐"], correct: 0, exp: "星が1つずつ増え、月が1つずつ減っていく法則です。最後は月が完全に消滅し、星が4つになります。" },
         
         { 
@@ -412,7 +404,7 @@
         { puzzle: "🔲　→　🔳　→　🔲　→　？", options: ["🔲", "🔳", "⬜", "⬛"], correct: 1, exp: "中心と外枠の色反転が交互に繰り返されています。" },
         { puzzle: "⬛　⬜　⬛<br>⬜　⬛　⬜<br>⬛　⬜　？", options: ["⬛", "⬜", "🔷", "🔸"], correct: 0, exp: "白と黒が交互に並ぶチェス盤模様の補完です。" },
 
-        // --- 中盤 21〜30 (数学的法則・数列・図形パズル) ---
+        // --- 中盤 21〜30 ---
         { puzzle: "２，３，５，７，１１，？", options: ["１２", "１３", "１４", "１５"], correct: 1, exp: "「素数」が順番に並んでいます。11の次は13です。" },
         { puzzle: "１→２→３→５→８→？", options: ["１０", "１１", "１２", "１３"], correct: 3, exp: "フィボナッチ数列。前の2つの数字の和が次になるため、5+8=13になります。" },
         { puzzle: "１→２→４→７→１１→１６→？", options: ["２０", "２１", "２２", "２３"], correct: 2, exp: "足される数が「+1, +2, +3...」と増える階差数列です。最後は16+6=22です。" },
@@ -448,7 +440,7 @@
             ], correct: 1, exp: "緑色のブロックが左上から右下へ対角線上に配置されています。延長線上にあるため右下も「緑」が入ります。"
         },
 
-        // --- 終盤 31〜40 (高度なスライド・循環推論・本格SVGマトリクス) ---
+        // --- 終盤 31〜40 ---
         { puzzle: "➕　➖　➗<br>➖　➗　➕<br>➗　➕　？", options: ["➕", "➖", "➗", "✖️"], correct: 1, exp: "縦横どの行・列を見ても記号が重複しない循環方格です。" },
         { puzzle: "🟢🔺　→　🔺🟢　→　🟢🔺　→　？", options: ["🟢🔺", "🔺🟢", "🟢🟢", "🔺🔺"], correct: 1, exp: "2つの要素の位置が左右交互に入れ替わっています。" },
         { puzzle: "🟪　🟫　🟪<br>🟫　🟪　🟫<br>🟪　？　🟪", options: ["🟪", "🟫", "⬛", "⬜"], correct: 1, exp: "格子状に色が配置されるマトリクスの中心補完です。" },
@@ -517,18 +509,82 @@
         { puzzle: "🖤　🤍　🖤<br>🤍　🖤　🤍<br>🖤　🤍　？", options: ["🖤", "🤍", "🔷", "🔶"], correct: 0, exp: "縦横の配列において色が完全な反転対称となるパターンです。" },
 
         // --- 最終盤 41〜50 (超難度・完全抽象ロジック) ---
-        
-        // 【修正完了】排他的論理和（XOR）の厳格化
-        { puzzle: "（規則：２つの図形を重ね合わせ、共通する部分は消え、異なる部分だけが残る）<br><br>▣　＋　□　＝　■<br>◨　＋　⬛　＝　？", options: ["◧", "◨", "⬜", "⬛"], correct: 0, exp: "排他的論理和（XOR）の規則です。左半分が黒い「◨」と、全体が黒い「⬛」を重ねると、左半分は共通するため消滅し、右半分だけが黒く残るため「◧」になります。" },
-        
+        { puzzle: "▣　＋　□　＝　■<br>◨　＋　⬛　＝　？", options: ["◧", "◨", "⬜", "⬛"], correct: 0, exp: "排他的論理和（XOR）の規則です。左半分が黒い「◨」と、全体が黒い「⬛」を重ねると、左半分は共通するため消滅し、右半分だけが黒く残るため「◧」になります。" },
         { puzzle: "⬆️🔴　→　➡️🔵　→　⬇️🟢　→　？", options: ["⬅️🟡", "⬅️🔴", "⬆️🟢", "⬇️🔵"], correct: 0, exp: "矢印が時計回りに90度回転すると同時に、色も別の色へシフトする二重規則です。" },
         { puzzle: "🔳🔳🔲 ＋ 🔲🔳🔳 ＝ 🔳🔲🔳<br>🔳🔲🔳 ＋ 🔳🔲🔳 ＝ ？", options: ["🔲🔲🔲", "🔳🔳🔳", "🔳🔲🔳", "🔲🔳🔲"], correct: 0, exp: "同じ図形同士を足すと「🔲」になり、違う図形だと「🔳」になる論理演算。全く同じものを足すため全て「🔲」になります。" },
-        { puzzle: "↗️　→　↘️　→　↙️　→　？", options: ["↖️", "↗️", "↘️", "↙️"], correct: 0, exp: "斜め矢印が時計回りに90度ずつ回転しています。" },
+        
+        // Q44: SVG XOR Matrix (難易度上昇版)
+        {
+            puzzle: `<div style="display:grid; grid-template-columns:repeat(3, 50px); gap:10px; margin:0 auto; width:fit-content; background:#161b22; padding:15px; border-radius:8px;">
+              <svg viewBox="0 0 40 40"><line x1="20" y1="0" x2="20" y2="40" stroke="#c9d1d9" stroke-width="4"/><line x1="0" y1="20" x2="40" y2="20" stroke="#c9d1d9" stroke-width="4"/></svg>
+              <svg viewBox="0 0 40 40"><line x1="20" y1="0" x2="20" y2="40" stroke="#c9d1d9" stroke-width="4"/><line x1="0" y1="0" x2="40" y2="40" stroke="#c9d1d9" stroke-width="4"/></svg>
+              <svg viewBox="0 0 40 40"><line x1="0" y1="20" x2="40" y2="20" stroke="#c9d1d9" stroke-width="4"/><line x1="0" y1="0" x2="40" y2="40" stroke="#c9d1d9" stroke-width="4"/></svg>
+
+              <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="none" stroke="#c9d1d9" stroke-width="4"/><line x1="0" y1="40" x2="40" y2="0" stroke="#c9d1d9" stroke-width="4"/></svg>
+              <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="none" stroke="#c9d1d9" stroke-width="4"/><circle cx="20" cy="20" r="5" fill="#c9d1d9"/></svg>
+              <svg viewBox="0 0 40 40"><line x1="0" y1="40" x2="40" y2="0" stroke="#c9d1d9" stroke-width="4"/><circle cx="20" cy="20" r="5" fill="#c9d1d9"/></svg>
+
+              <svg viewBox="0 0 40 40"><rect x="5" y="5" width="30" height="30" fill="none" stroke="#c9d1d9" stroke-width="4"/><line x1="20" y1="0" x2="20" y2="40" stroke="#c9d1d9" stroke-width="4"/></svg>
+              <svg viewBox="0 0 40 40"><line x1="0" y1="20" x2="40" y2="20" stroke="#c9d1d9" stroke-width="4"/><line x1="20" y1="0" x2="20" y2="40" stroke="#c9d1d9" stroke-width="4"/></svg>
+              <div style="display:flex; align-items:center; justify-content:center; border:2px dashed #ff9900; color:#ff9900; font-size:24px;">？</div>
+            </div>`,
+            options: [
+                `<svg viewBox="0 0 40 40" style="width:30px;height:30px;"><rect x="5" y="5" width="30" height="30" fill="none" stroke="#c9d1d9" stroke-width="4"/><line x1="0" y1="20" x2="40" y2="20" stroke="#c9d1d9" stroke-width="4"/></svg>`,
+                `<svg viewBox="0 0 40 40" style="width:30px;height:30px;"><rect x="5" y="5" width="30" height="30" fill="none" stroke="#c9d1d9" stroke-width="4"/><line x1="20" y1="0" x2="20" y2="40" stroke="#c9d1d9" stroke-width="4"/></svg>`,
+                `<svg viewBox="0 0 40 40" style="width:30px;height:30px;"><line x1="0" y1="20" x2="40" y2="20" stroke="#c9d1d9" stroke-width="4"/><line x1="20" y1="0" x2="20" y2="40" stroke="#c9d1d9" stroke-width="4"/></svg>`,
+                `<svg viewBox="0 0 40 40" style="width:30px;height:30px;"><rect x="5" y="5" width="30" height="30" fill="none" stroke="#c9d1d9" stroke-width="4"/><line x1="0" y1="0" x2="40" y2="40" stroke="#c9d1d9" stroke-width="4"/></svg>`
+            ],
+            correct: 0,
+            exp: "排他的論理和（XOR）の規則です。各行で、左と中央の図形を重ね合わせたとき、共通する要素（線や図形）は消滅し、片方にしかない要素が右の図形として残ります。"
+        },
+
         { puzzle: "⚫⚪⚪<br>⚪⚫⚪<br>⚪⚪⚫<br>　↓<br>⚪⚫⚪<br>⚪⚪⚫<br>⚫⚪⚪<br>　↓<br>？", options: ["⚪⚪⚫<br>⚫⚪⚪<br>⚪⚫⚪", "⚫⚪⚪<br>⚪⚫⚪<br>⚪⚪⚫", "⚪⚪⚪<br>⚫⚫⚫<br>⚪⚪⚪", "⚫⚫⚫<br>⚪⚪⚪<br>⚫⚫⚫"], correct: 0, exp: "黒い点が右下斜めに向かって移動し、枠外に出ると反対側から現れる(トーラス状の)2次元シフトです。" },
         { puzzle: "２　，　４　，　８<br>３　，　９　，　２７<br>４　，　１６，　？", options: ["３２", "４８", "６４", "８０"], correct: 2, exp: "各行の累乗数列（xの1乗, 2乗, 3乗）です。4×4×4＝64が入ります。" },
         { puzzle: "🔴　＋　🔵　＝　🟣<br>🟡　＋　🔵　＝　🟢<br>🔴　＋　🟡　＝　？", options: ["🧡", "🟤", "🖤", "⚪"], correct: 0, exp: "色彩のブレンドです。赤と黄を混ぜるとオレンジ（🧡）になります。" },
         { puzzle: "⬜　→　🟩　→　⬛　→　？", options: ["⬜", "🟥", "🟦", "🟨"], correct: 0, exp: "白（光の全反射）から緑（中間色）、そして黒（全吸収）へと変化したのち、再び白に戻る明度のループです。" },
-        { puzzle: "（最終問題：規則の統合）<br>🔺🔵　→　🔻🔴　→　🔺🔵　→　？", options: ["🔻🔴", "🔺🔴", "🔻🔵", "🔺🔵"], correct: 0, exp: "図形の上下反転と、色の青・赤入れ替えが同時に発生する完全なフリップロジックです。" },
+        
+        // Q49: 幾何学的複合トランスフォーム (難易度上昇版)
+        {
+            puzzle: `<div style="display:flex; align-items:center; justify-content:center; gap:10px; margin:20px 0;">
+              <svg viewBox="0 0 50 50" style="width:50px; height:50px;">
+                <polygon points="25,5 45,40 5,40" fill="none" stroke="#58a6ff" stroke-width="3"/>
+                <circle cx="25" cy="30" r="5" fill="#f85149"/>
+              </svg>
+              <div style="font-size:24px; color:#8b949e;">→</div>
+              <svg viewBox="0 0 50 50" style="width:50px; height:50px;">
+                <rect x="5" y="5" width="40" height="40" fill="none" stroke="#f85149" stroke-width="3"/>
+                <circle cx="15" cy="25" r="5" fill="#2ea44f"/>
+              </svg>
+              <div style="font-size:24px; color:#8b949e;">→</div>
+              <svg viewBox="0 0 50 50" style="width:50px; height:50px;">
+                <polygon points="25,5 47,20 38,45 12,45 3,20" fill="none" stroke="#2ea44f" stroke-width="3"/>
+                <circle cx="25" cy="15" r="5" fill="#58a6ff"/>
+              </svg>
+              <div style="font-size:24px; color:#8b949e;">→</div>
+              <div style="width:50px; height:50px; border:2px dashed #ff9900; display:flex; align-items:center; justify-content:center; color:#ff9900; font-size:24px;">？</div>
+            </div>`,
+            options: [
+                `<svg viewBox="0 0 50 50" style="width:40px; height:40px;">
+                   <polygon points="25,5 45,15 45,35 25,45 5,35 5,15" fill="none" stroke="#58a6ff" stroke-width="3"/>
+                   <circle cx="35" cy="25" r="5" fill="#f85149"/>
+                 </svg>`,
+                `<svg viewBox="0 0 50 50" style="width:40px; height:40px;">
+                   <polygon points="25,5 45,15 45,35 25,45 5,35 5,15" fill="none" stroke="#58a6ff" stroke-width="3"/>
+                   <circle cx="25" cy="35" r="5" fill="#f85149"/>
+                 </svg>`,
+                `<svg viewBox="0 0 50 50" style="width:40px; height:40px;">
+                   <polygon points="25,5 45,15 45,35 25,45 5,35 5,15" fill="none" stroke="#f85149" stroke-width="3"/>
+                   <circle cx="35" cy="25" r="5" fill="#58a6ff"/>
+                 </svg>`,
+                `<svg viewBox="0 0 50 50" style="width:40px; height:40px;">
+                   <polygon points="25,5 47,20 38,45 12,45 3,20" fill="none" stroke="#58a6ff" stroke-width="3"/>
+                   <circle cx="15" cy="25" r="5" fill="#f85149"/>
+                 </svg>`
+            ],
+            correct: 0,
+            exp: "①外枠の画数が＋1（三角→四角→五角→六角）、②外枠の色が内部のドットの色を継承、③ドットの色が青→赤→緑→青と循環、④ドットの位置が下→左→上→右と時計回りに90度ずつ移動しています。"
+        },
+
         { puzzle: "📦　→　📭　→　📦　→　？", options: ["📦", "📭", "📬", "📮"], correct: 1, exp: "箱型とポスト型が交互に出現する基礎ループです。" }
     ];
 
@@ -550,12 +606,19 @@
         document.getElementById('iq-progress-text').innerText = iqCurrentIndex + 1;
         document.getElementById('iq-progress-fill').style.width = `${((iqCurrentIndex + 1) / 50) * 100}%`;
         document.getElementById('iq-question-number').innerText = `第 ${iqCurrentIndex + 1} 問`;
-        document.getElementById('iq-question-title').innerHTML = q.puzzle;
+        
+        // 設問の表示ズレ対策（等幅フォントブロック化）
+        if(q.puzzle.includes('<br>') && !q.puzzle.includes('<div')) {
+            document.getElementById('iq-question-title').innerHTML = `<div style="font-family:monospace; line-height:1.4; letter-spacing:2px; display:inline-block; text-align:left;">${q.puzzle}</div>`;
+        } else {
+            document.getElementById('iq-question-title').innerHTML = q.puzzle;
+        }
         
         const optionsContainer = document.getElementById('iq-options'); optionsContainer.innerHTML = '';
         q.options.forEach((opt, index) => {
             const btn = document.createElement('button'); btn.className = 'btn'; btn.style.marginBottom = '0'; 
-            btn.innerHTML = opt;
+            // 選択肢の表示ズレを防止するため span でラップして inline-block 化
+            btn.innerHTML = `<span style="display:inline-block; text-align:center; line-height:1.4; font-family:monospace; letter-spacing:2px;">${opt}</span>`;
             btn.onclick = () => handleIqAnswer(index); optionsContainer.appendChild(btn);
         });
     }
