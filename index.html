@@ -46,7 +46,6 @@
         .progress-bar { width: 100%; height: 6px; background: #222; border-radius: 3px; margin-bottom: 20px; }
         .progress-fill { height: 100%; background: var(--accent-color); width: 0%; transition: width 0.3s; }
         
-        /* ズレと見切れ修正：インラインブロックで中央揃えしつつ、スクロールを許可 */
         .matrix-dummy-box {
             width: 100%; min-height: 180px; background: #090d13; border: 1px solid var(--border-color);
             border-radius: 8px; margin: 15px 0; padding: 20px 10px; display: flex; flex-direction: column;
@@ -64,14 +63,12 @@
         .pad-btn { padding: 18px 0; font-size: 22px; margin-bottom: 0; }
         .score-board { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; color: #8b949e; }
         
-        /* レベル選択UI */
         .level-selector { display: flex; gap: 10px; margin-bottom: 15px; }
         .level-btn { flex: 1; padding: 12px 5px; font-size: 14px; background: #21262d; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-white); cursor: pointer; transition: 0.2s; font-weight: bold; }
         .level-btn.active { background: var(--brain-color); color: #000; border-color: var(--brain-color); }
         .adv-toggle { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; font-size: 15px; font-weight: bold; color: #ff9900; }
         .adv-toggle input { width: 20px; height: 20px; accent-color: #ff9900; }
 
-        /* ステータスバー（パラメーター） */
         .stat-row { margin-bottom: 12px; text-align: left; }
         .stat-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; margin-bottom: 4px; color: var(--text-white); }
         .stat-bar-bg { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; }
@@ -122,7 +119,6 @@
                 <div class="stat-label"><span>🔥 継続力 (Stamina)</span><span id="st-sta">Lv.1</span></div>
                 <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-sta"></div></div>
             </div>
-            <p style="font-size:12px; color:#8b949e; margin-top:20px;">トレーニングを重ねてパラメーターをLv.99まで引き上げましょう。</p>
         </div>
         <button class="btn" onclick="switchView('menu-view')">メニューに戻る</button>
     </div>
@@ -187,21 +183,31 @@
                 🔥 ADVANCED (テンキーシャッフル)
             </label>
         </div>
-        <button class="btn" style="background:var(--brain-color); color:#000; border:none;" onclick="startBrainGame()">トレーニング開始</button>
+        <button class="btn" style="background:var(--brain-color); color:#000; border:none;" onclick="setupBrainGame()">トレーニング準備</button>
         <button class="btn" onclick="switchView('menu-view')">メニューに戻る</button>
     </div>
 
     <div id="brain-game-view" class="view hidden">
-        <div class="score-board">
-            <div>進行度: <span id="brain-progress">1</span> / 20</div>
-            <div id="mode-indicator" style="font-weight:bold;">MID</div>
-            <div>時間: <span id="brain-timer">0.0</span>秒</div>
+        
+        <div id="brain-ready-ui" style="text-align:center; padding:40px 0;">
+            <h2 style="color:var(--brain-color); font-size:28px;">ARE YOU READY?</h2>
+            <p style="color:#8b949e; margin-bottom:40px; line-height:1.6;">心の準備ができたらスタートを押してください。<br>タイマーが作動し、問題が表示されます。</p>
+            <button class="btn" style="background:var(--brain-color); color:#000; border:none; padding:20px; font-size:24px;" onclick="beginBrainTimer()">START</button>
+            <button class="btn" style="margin-top:20px;" onclick="abortGame()">やめる</button>
         </div>
-        <div id="brain-panel" class="panel">
-            <div id="formula" class="formula">0 + 0</div>
+
+        <div id="brain-play-ui" class="hidden">
+            <div class="score-board">
+                <div>進行度: <span id="brain-progress">1</span> / 20</div>
+                <div id="mode-indicator" style="font-weight:bold;">MID</div>
+                <div>時間: <span id="brain-timer">0.0</span>秒</div>
+            </div>
+            <div id="brain-panel" class="panel">
+                <div id="formula" class="formula">0 + 0</div>
+            </div>
+            <div id="num-pad" class="num-pad"></div>
+            <button class="btn btn-danger" style="margin-top:20px;" onclick="abortGame()">中止してメニューへ</button>
         </div>
-        <div id="num-pad" class="num-pad"></div>
-        <button class="btn btn-danger" style="margin-top:20px;" onclick="abortGame()">中止してメニューへ</button>
     </div>
 
     <div id="brain-result-view" class="view hidden">
@@ -224,7 +230,6 @@
     };
 
     function saveStats() {
-        // レベル上限を99に設定
         Object.keys(userStats).forEach(key => {
             if(typeof userStats[key] === 'number' && userStats[key] > 99) userStats[key] = 99;
         });
@@ -255,7 +260,6 @@
         types.forEach((t, i) => {
             const level = Math.floor(userStats[t]);
             document.getElementById(`st-${ids[i]}`).innerText = `Lv.${level}`;
-            // 視覚的なバーの伸び（99で100%になる計算）
             setTimeout(() => {
                 document.getElementById(`bar-${ids[i]}`).style.width = `${(level / 99) * 100}%`;
             }, 100);
@@ -275,8 +279,7 @@
         switchView('menu-view');
     }
 
-    // ==================== IQテストデータ（ロジック修正済） ====================
-    // 問4のハルシネーション（青い三角が無い問題）を「赤い四角形→青い四角形」「赤い円→青い円」の存在確実な記号に置換し修正
+    // ==================== IQテストデータ ====================
     const actualIqQuestions = [
         { puzzle: "◯　→　△　→　□　→　？", options: ["◯", "△", "□", "☆"], correct: 3, exp: "辺の数が「円(0)→三画→四角」と増えるため、次は星型(多角形)が入ります。" },
         { puzzle: "🔴　→　🔵　→　🟢　→　🔴　→　？", options: ["🔴", "🔵", "🟢", "🟡"], correct: 1, exp: "赤・青・緑の3色パターンがループしています。" },
@@ -288,7 +291,6 @@
         { puzzle: "🔴　→　🔴🔴　→　🔴🔴🔴　→　？", options: ["🔴", "🔴🔴", "🔴🔴🔴", "🔴🔴🔴🔴"], correct: 3, exp: "記号の数が1つずつ純増しています。" },
         { puzzle: "➖　＋　◯　＝　⨁\n✖️　＋　◯　＝　？", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1, exp: "線を丸に重ね合わせる合成規則です。バツ印を入れると「⊗」になります。" },
         { puzzle: "🌗　→　🌑　→　🌓　→　🌕　→　？", options: ["🌗", "🌑", "🌓", "🌕"], correct: 0, exp: "月の満ち欠けが一定の周期で右回りに循環しています。" },
-        
         { puzzle: "🔺🔴　｜　⬜🔴\n🔺🔵　｜　？", options: ["⬜🔴", "🔺🔴", "⬜🔵", "🔺🔵"], correct: 2, exp: "縦の列は同じ色、横の行は同じ形状が並ぶマトリクスです。" },
         { puzzle: "⬆️🔴　→　➡️🔵　→　⬇️🟢　→　？", options: ["⬅️🔴", "⬅️🔵", "⬆️🔴", "⬇️🟡"], correct: 0, exp: "矢印は90度回転し、色は「赤→青→緑」の順でループしています。" },
         { puzzle: "⬛　⬜　⬛\n⬜　⬛　⬜\n⬛　⬜　？", options: ["⬛", "⬜", "🔷", "🔸"], correct: 0, exp: "白と黒が交互に並ぶチェス盤模様の補完です。" },
@@ -299,7 +301,6 @@
         { puzzle: "🫱　→　🫲　→　🫱　→　？", options: ["🫱", "🫲", "👆", "👇"], correct: 1, exp: "手の向きが左右反転で交互に繰り返されています。" },
         { puzzle: "🍏🍏🍏　＝　９\n🍎🍎　　＝　４\n🍊　　　＝　？", options: ["１", "２", "３", "０"], correct: 0, exp: "個数の2乗（3の2乗=9）が答えです。1の2乗は1になります。" },
         { puzzle: "🔶　→　🔶🔶🔶　→　🔶🔶🔶🔶🔶　→　？", options: ["６個", "７個", "８個", "１個"], correct: 1, exp: "要素の数が奇数（1,3,5）で増加しているため、次は7個です。" },
-
         { puzzle: "🔵🔵🔵　→　🔵🔵　→　🔵　→　？", options: ["なし", "🔵", "🔴", "🔳"], correct: 0, exp: "個数が3→2→1と減少しているため、最後は0(消滅)になります。" },
         { puzzle: "◯🔴　→　⬜🔵　→　△🟢　→　？", options: ["☆🟡", "◯🟡", "⬜🔴", "△🔵"], correct: 0, exp: "形状と色の両方が新しいものへ遷移します。" },
         { puzzle: "🟥　🔺　🟥\n🟦　🔹　🟦\n🟩　🟢　？", options: ["🟢", "🔺", "🟩", "🔷"], correct: 2, exp: "左右が同じ色でサンドイッチされる構造です。" },
@@ -310,7 +311,6 @@
         { puzzle: "👍　→　☝️　→　👎　→　？", options: ["👉", "👈", "👆", "👇"], correct: 1, exp: "手のポーズが反時計回りに90度ずつ回転しています。" },
         { puzzle: "Ａ１　→　Ｂ２　→　Ｃ３　→　？", options: ["Ｄ４", "Ｄ５", "Ｅ４", "Ｃ４"], correct: 0, exp: "アルファベットと数字が同時に進んでいます。" },
         { puzzle: "🟢🔺　→　🔺🟢　→　🟢🔺　→　？", options: ["🟢🔺", "🔺🟢", "🟢🟢", "🔺🔺"], correct: 1, exp: "2つの要素の位置が左右交互に入れ替わっています。" },
-        
         { puzzle: "🟪　🟫　🟪\n🟫　🟪　🟫\n🟪　？　🟪", options: ["🟪", "🟫", "⬛", "⬜"], correct: 1, exp: "格子状に色が配置されるマトリクスの中心補完です。" },
         { puzzle: "◯　△　□\n□　◯　△\n△　□　？", options: ["◯", "△", "□", "☆"], correct: 0, exp: "各行・列に「◯」「△」「□」が重複せず配置される規則です。" },
         { puzzle: "📦　→　📭　→　📦　→　？", options: ["📦", "📭", "📬", "📮"], correct: 1, exp: "箱型とポスト型が交互に出現する基礎ループです。" },
@@ -321,7 +321,6 @@
         { puzzle: "🔵　🔴　🟢\n🟢　🔵　🔴\n🔴　🟢　？", options: ["🔵", "🔴", "🟢", "🟡"], correct: 0, exp: "色が縦横で重複しないグリッドローテーションです。" },
         { puzzle: "🔺　＋　🔻　＝　⏳\n▶️　＋　◀️　＝　？", options: ["🎀", "🌟", "🍀", "💎"], correct: 0, exp: "2つの三角形を結合させた形状類推です。合わせるとリボン(🎀)になります。" },
         { puzzle: "１０１０　→　０１０１　→　１０１０　→　？", options: ["１０１０", "０１０１", "１１１１", "００００"], correct: 1, exp: "0と1のビット反転が交互に行われています。" },
-
         { puzzle: "⭐　🌙　☀️\n☀️　⭐　🌙\n🌙　☀️　？", options: ["⭐", "🌙", "☀️", "☁️"], correct: 0, exp: "天体マークが右へスライドしながら循環しています。" },
         { puzzle: "２　，　４　，　８\n３　，　９　，　２７\n４　，　１６，　？", options: ["３２", "４８", "６４", "８０"], correct: 2, exp: "各行の累乗数列です。4×4×4＝64が入ります。" },
         { puzzle: "🖤　🤍　🖤\n🤍　🖤　🤍\n🖤　🤍　？", options: ["🖤", "🤍", "🔷", "🔶"], correct: 0, exp: "縦横の配列において色が反転対称となるパターンです。" },
@@ -399,7 +398,6 @@
         else evalText += "平均的な知能指数です。一般的なロジックの処理において十分な安定性を持っています。";
         document.getElementById('iq-evaluation').innerHTML = evalText;
 
-        // ステータス反映 (IQテスト完了時: LogicとSpatialとAccuracyにEXP付与)
         addExp('logic', iqScore * 0.1);
         addExp('spatial', iqScore * 0.1);
         addExp('accuracy', (iqScore / 50) * 2);
@@ -425,7 +423,7 @@
         if (wrongCount === 0) reviewSection.innerHTML += '<div style="color:var(--brain-color); font-size:14px; padding:10px;">素晴らしい！全問正解です。</div>';
     }
 
-    // ==================== 脳トレ処理（3段階難易度対応） ====================
+    // ==================== 脳トレ処理（ゴーストクリック防御・UI分離） ====================
     let currentDifficulty = 'MID';
     let isAdvancedMode = false;
     let brainCurrentQuestion = 1, brainCorrectAnswer = 0, brainUserResponse = "";
@@ -438,7 +436,8 @@
         document.getElementById(`btn-lv-${level.toLowerCase()}`).classList.add('active');
     }
 
-    function startBrainGame() {
+    // メニューからの遷移時、すぐにゲームを始めず「START」画面を挟む
+    function setupBrainGame() {
         isAdvancedMode = document.getElementById('adv-checkbox').checked;
         brainCurrentQuestion = 1; brainUserResponse = ""; penaltySeconds = 0; currentAccuracyScore = 0;
         
@@ -446,6 +445,17 @@
         document.getElementById('mode-indicator').style.color = isAdvancedMode ? '#ff9900' : '#2ea44f';
 
         switchView('brain-game-view');
+        
+        // ゴーストクリックを吸収するための待機UIを表示
+        document.getElementById('brain-ready-ui').classList.remove('hidden');
+        document.getElementById('brain-play-ui').classList.add('hidden');
+    }
+
+    // ユーザーが明確にSTARTを押した瞬間にタイマーと問題描画を開始
+    function beginBrainTimer() {
+        document.getElementById('brain-ready-ui').classList.add('hidden');
+        document.getElementById('brain-play-ui').classList.remove('hidden');
+        
         brainStartTime = performance.now();
         if (brainTimerInterval) clearInterval(brainTimerInterval);
         brainTimerInterval = setInterval(() => {
@@ -504,7 +514,7 @@
 
     function checkBrainAnswer() {
         const panel = document.getElementById('brain-panel');
-        if (brainUserResponse === "") return; // ゴーストクリック防御
+        if (brainUserResponse === "") return; // 空エンター無視
         
         if (parseInt(brainUserResponse) === brainCorrectAnswer) {
             currentAccuracyScore += 1;
@@ -520,16 +530,31 @@
                 if (penaltySeconds > 0) timeText += `<br><span style="font-size:16px; color:#ff9900;">(内ペナルティ: +${penaltySeconds}秒)</span>`;
                 document.getElementById('brain-final-time').innerHTML = timeText;
 
-                // 難易度とモードに応じた脳年齢算定
-                let baseSec = currentDifficulty === 'LOW' ? 18 : currentDifficulty === 'MID' ? 24 : 35;
-                if(isAdvancedMode) baseSec += 12; // シャッフル猶予加算
+                // 【修正】新・難易度別スケーリングロジック
+                let baseSec = 0;
+                let slope = 1.0;
+
+                if (currentDifficulty === 'LOW') {
+                    baseSec = 25; slope = 0.8;
+                } else if (currentDifficulty === 'MID') {
+                    baseSec = 40; slope = 0.6;
+                } else if (currentDifficulty === 'HIGH') {
+                    baseSec = 60; slope = 0.4;
+                }
+
+                // シャッフル（ADV）の猶予時間を加算
+                if (isAdvancedMode) {
+                    baseSec += (currentDifficulty === 'HIGH' ? 20 : 10);
+                }
 
                 let brainAge = 20;
-                if (finalTime > baseSec) brainAge = Math.round(20 + (finalTime - baseSec) * 1.0);
+                if (finalTime > baseSec) {
+                    brainAge = Math.round(20 + (finalTime - baseSec) * slope);
+                }
                 if (brainAge > 80) brainAge = 80;
+
                 document.getElementById('brain-age-eval').innerText = `あなたの脳年齢は【 ${brainAge} 歳 】です。`;
 
-                // ステータス反映
                 addExp('speed', (baseSec / finalTime) * 1.5);
                 addExp('accuracy', (currentAccuracyScore / 20) * 1.0 - (penaltySeconds * 0.1));
             }
