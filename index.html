@@ -75,12 +75,7 @@
         .stat-bar-bg { width: 100%; height: 8px; background: #222; border-radius: 4px; overflow: hidden; }
         .stat-bar-fill { height: 100%; background: var(--status-color); width: 0%; transition: 0.5s ease-out; }
 
-        /* レーダーチャート用キャンバス */
-        #radar-canvas {
-            margin: 20px auto 0 auto;
-            display: block;
-            max-width: 100%;
-        }
+        #radar-canvas { margin: 20px auto 0 auto; display: block; max-width: 100%; }
 
         .review-title { text-align: left; font-size: 16px; color: var(--iq-color); margin-top: 25px; margin-bottom: 10px; font-weight: bold;}
         .review-card { background: #10141b; border: 1px solid #21262d; border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: left; font-size: 14px; }
@@ -99,7 +94,7 @@
         <p style="text-align:center; color:#8b949e; margin-bottom:30px; font-size:14px;">スマホ完結型・次世代知能トレーニング</p>
         
         <button class="btn" style="border-color:var(--status-color); color:var(--status-color);" onclick="openStatus()">📊 マイステータス</button>
-        <button class="btn" style="border-color:var(--iq-color); color:var(--iq-color);" onclick="switchView('iq-start-view')">🧠 精密IQテスト</button>
+        <button class="btn" style="border-color:var(--iq-color); color:var(--iq-color);" onclick="switchView('iq-start-view')">🧠 精密IQテスト (厳格版)</button>
         <button class="btn" style="border-color:var(--brain-color); color:var(--brain-color);" onclick="switchView('brain-start-view')">⚡ 毎日脳トレ（計算20）</button>
         <button class="btn" style="border-color:#444; color:#666; cursor:not-allowed;" disabled>🏆 オンラインランキング (準備中)</button>
     </div>
@@ -127,7 +122,6 @@
                 <div class="stat-label"><span>🔥 継続力 (Stamina)</span><span id="st-sta">Lv.1</span></div>
                 <div class="stat-bar-bg"><div class="stat-bar-fill" id="bar-sta"></div></div>
             </div>
-            
             <canvas id="radar-canvas" width="280" height="280"></canvas>
         </div>
         <button class="btn" onclick="switchView('menu-view')">メニューに戻る</button>
@@ -136,7 +130,7 @@
     <div id="iq-start-view" class="view hidden">
         <h2 style="color: var(--iq-color); text-align:center;">精密図形IQテスト</h2>
         <div class="panel">
-            <p style="line-height:1.6;">全50問の図形マトリクス問題です。<br>ジャンルが毎問切り替わる設計により、真の流動性知能を測定します。</p>
+            <p style="line-height:1.6;">全50問の図形マトリクス問題。<br>難易度に応じた【傾斜配点アルゴリズム】を搭載し、真の流動性知能を厳格に測定します。</p>
             <p style="font-size:13px; color:#8b949e; margin-top:15px;">所要時間：約20分</p>
         </div>
         <button class="btn" style="background:var(--iq-color); color:#000; border:none;" onclick="startIqTest()">テストを開始する</button>
@@ -171,7 +165,7 @@
     <div id="iq-result-view" class="view hidden">
         <h2 style="text-align:center;">測定結果レポート</h2>
         <div class="panel">
-            <p style="margin:0;">あなたの推定知能指数</p>
+            <p style="margin:0;">あなたの推定知能指数 (厳格基準)</p>
             <h1 id="iq-score" style="color: var(--iq-color); font-size: 54px; margin: 15px 0;">--</h1>
             <p id="iq-evaluation" style="line-height:1.6; font-size:14px; text-align:left; margin-bottom:0;"></p>
         </div>
@@ -198,7 +192,6 @@
     </div>
 
     <div id="brain-game-view" class="view hidden">
-        
         <div id="brain-ready-ui" style="text-align:center; padding:40px 0;">
             <h2 style="color:var(--brain-color); font-size:28px;">ARE YOU READY?</h2>
             <p style="color:#8b949e; margin-bottom:40px; line-height:1.6;">心の準備ができたらスタートを押してください。<br>タイマーが作動し、問題が表示されます。</p>
@@ -245,49 +238,30 @@
         });
         localStorage.setItem('neoBrainStats', JSON.stringify(userStats));
     }
-
     function addExp(type, amount) {
-        if(userStats[type] !== undefined) {
-            userStats[type] += amount;
-            saveStats();
-        }
+        if(userStats[type] !== undefined) { userStats[type] += amount; saveStats(); }
     }
-
     function checkStamina() {
         const today = new Date().toISOString().split('T')[0];
-        if (userStats.lastDate !== today) {
-            addExp('stamina', 1);
-            userStats.lastDate = today;
-            saveStats();
-        }
+        if (userStats.lastDate !== today) { addExp('stamina', 1); userStats.lastDate = today; saveStats(); }
     }
-
     function openStatus() {
         switchView('status-view');
         const types = ['speed', 'accuracy', 'spatial', 'logic', 'stamina'];
         const ids = ['spd', 'acc', 'spa', 'log', 'sta'];
-        
         types.forEach((t, i) => {
             const level = Math.floor(userStats[t]);
             document.getElementById(`st-${ids[i]}`).innerText = `Lv.${level}`;
-            setTimeout(() => {
-                document.getElementById(`bar-${ids[i]}`).style.width = `${(level / 99) * 100}%`;
-            }, 100);
+            setTimeout(() => { document.getElementById(`bar-${ids[i]}`).style.width = `${(level / 99) * 100}%`; }, 100);
         });
-
         drawRadarChart();
     }
-
     function drawRadarChart() {
         const canvas = document.getElementById('radar-canvas');
         if(!canvas) return;
         const ctx = canvas.getContext('2d');
-        const cx = canvas.width / 2;
-        const cy = canvas.height / 2;
-        const r = Math.min(cx, cy) - 30; // 余白確保
-
+        const cx = canvas.width / 2; const cy = canvas.height / 2; const r = Math.min(cx, cy) - 30;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         const stats = [
             { label: 'Speed', val: Math.min(userStats.speed, 99) },
             { label: 'Accuracy', val: Math.min(userStats.accuracy, 99) },
@@ -295,73 +269,29 @@
             { label: 'Logic', val: Math.min(userStats.logic, 99) },
             { label: 'Stamina', val: Math.min(userStats.stamina, 99) }
         ];
-
-        // 頂点の角度計算（真上が0番目になるよう-90度シフト）
         const angles = stats.map((_, i) => (Math.PI * 2 * i) / 5 - Math.PI / 2);
-
-        // 背景の五角形グリッド線描画
-        ctx.strokeStyle = '#30363d';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
         for (let j = 1; j <= 5; j++) {
             ctx.beginPath();
             const radius = r * (j / 5);
             for (let i = 0; i < 5; i++) {
-                const x = cx + radius * Math.cos(angles[i]);
-                const y = cy + radius * Math.sin(angles[i]);
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+                const x = cx + radius * Math.cos(angles[i]); const y = cy + radius * Math.sin(angles[i]);
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
             }
-            ctx.closePath();
-            ctx.stroke();
+            ctx.closePath(); ctx.stroke();
         }
-
-        // 中心からの放射線描画
         ctx.strokeStyle = '#30363d';
-        angles.forEach(angle => {
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
-            ctx.stroke();
-        });
-
-        // テキストラベルの描画
-        ctx.fillStyle = '#8b949e';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        angles.forEach(angle => { ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle)); ctx.stroke(); });
+        ctx.fillStyle = '#8b949e'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        stats.forEach((stat, i) => { const x = cx + (r + 15) * Math.cos(angles[i]); const y = cy + (r + 15) * Math.sin(angles[i]); ctx.fillText(stat.label, x, y); });
+        ctx.fillStyle = 'rgba(255, 85, 255, 0.3)'; ctx.strokeStyle = '#ff55ff'; ctx.lineWidth = 2; ctx.beginPath();
         stats.forEach((stat, i) => {
-            const x = cx + (r + 15) * Math.cos(angles[i]);
-            const y = cy + (r + 15) * Math.sin(angles[i]);
-            ctx.fillText(stat.label, x, y);
+            const radius = r * (stat.val / 99); const x = cx + radius * Math.cos(angles[i]); const y = cy + radius * Math.sin(angles[i]);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         });
-
-        // 実際のステータスポリゴン描画
-        ctx.fillStyle = 'rgba(255, 85, 255, 0.3)'; // 薄いピンク
-        ctx.strokeStyle = '#ff55ff';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        stats.forEach((stat, i) => {
-            // 値(1〜99)を半径比率に変換
-            const radius = r * (stat.val / 99);
-            const x = cx + radius * Math.cos(angles[i]);
-            const y = cy + radius * Math.sin(angles[i]);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        });
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        
-        // 頂点のドット描画
+        ctx.closePath(); ctx.fill(); ctx.stroke();
         ctx.fillStyle = '#ffffff';
-        stats.forEach((stat, i) => {
-            const radius = r * (stat.val / 99);
-            const x = cx + radius * Math.cos(angles[i]);
-            const y = cy + radius * Math.sin(angles[i]);
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
-            ctx.fill();
-        });
+        stats.forEach((stat, i) => { const radius = r * (stat.val / 99); const x = cx + radius * Math.cos(angles[i]); const y = cy + radius * Math.sin(angles[i]); ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill(); });
     }
 
     // ==================== グローバル制御 ====================
@@ -369,80 +299,85 @@
     function switchView(viewId) {
         document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
         document.getElementById(viewId).classList.remove('hidden');
-        activeViewId = viewId;
-        checkStamina();
+        activeViewId = viewId; checkStamina();
     }
-    function abortGame() {
-        if (brainTimerInterval) clearInterval(brainTimerInterval);
-        switchView('menu-view');
-    }
+    function abortGame() { if (brainTimerInterval) clearInterval(brainTimerInterval); switchView('menu-view'); }
 
-    // ==================== IQテストデータ ====================
+    // ==================== 厳密設計されたIQテスト全50問 ====================
+    // 構成: [1-10]基礎 [11-20]2Dマトリクス [21-30]数学的数列(素数/フィボ等) [31-40]高度シフト [41-50]極限抽象XOR・独立移動
     const actualIqQuestions = [
+        // --- 序盤 1〜10 (基礎的法則・ウェイト1.0) ---
         { puzzle: "◯　→　△　→　□　→　？", options: ["◯", "△", "□", "☆"], correct: 3, exp: "辺の数が「円(0)→三画→四角」と増えるため、次は星型(多角形)が入ります。" },
         { puzzle: "🔴　→　🔵　→　🟢　→　🔴　→　？", options: ["🔴", "🔵", "🟢", "🟡"], correct: 1, exp: "赤・青・緑の3色パターンがループしています。" },
         { puzzle: "⬆️　→　➡️　→　⬇️　→　？", options: ["⬆️", "➡️", "⬇️", "⬅️"], correct: 3, exp: "矢印の向きが時計回りに90度ずつ回転しています。" },
         { puzzle: "🟥　→　🟦\n🔴　→　？", options: ["🔺", "🔷", "🔵", "🟡"], correct: 2, exp: "上が「赤から青」への変化であるため、赤い丸に対応するのは青い丸です。" },
         { puzzle: "左👈　右👉\n上👆　下？", options: ["👈", "👉", "👆", "👇"], correct: 3, exp: "空間的な対比です。上に対するのは下を指す手になります。" },
         { puzzle: "⭐️　→　🌙　→　⭐️　→　🌙　→　？", options: ["⭐️", "🌙", "☀️", "🌀"], correct: 0, exp: "星と月が交互に配置される単純な交互規則です。" },
-        { puzzle: "１　２　３\n２　４　６\n３　６　？", options: ["７", "８", "９", "１２"], correct: 2, exp: "縦横の掛け算（九九）マトリクスです。3×3=9が入ります。" },
         { puzzle: "🔴　→　🔴🔴　→　🔴🔴🔴　→　？", options: ["🔴", "🔴🔴", "🔴🔴🔴", "🔴🔴🔴🔴"], correct: 3, exp: "記号の数が1つずつ純増しています。" },
         { puzzle: "➖　＋　◯　＝　⨁\n✖️　＋　◯　＝　？", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1, exp: "線を丸に重ね合わせる合成規則です。バツ印を入れると「⊗」になります。" },
         { puzzle: "🌗　→　🌑　→　🌓　→　🌕　→　？", options: ["🌗", "🌑", "🌓", "🌕"], correct: 0, exp: "月の満ち欠けが一定の周期で右回りに循環しています。" },
+        { puzzle: "👆　→　👉　→　👇　→　？", options: ["👈", "👉", "👆", "👇"], correct: 0, exp: "指の向きが時計回りに90度ずつ回転しています。（ロジック修正済）" },
+
+        // --- 中盤 11〜20 (2次元・反転マトリクス・ウェイト1.5) ---
         { puzzle: "🔺🔴　｜　⬜🔴\n🔺🔵　｜　？", options: ["⬜🔴", "🔺🔴", "⬜🔵", "🔺🔵"], correct: 2, exp: "縦の列は同じ色、横の行は同じ形状が並ぶマトリクスです。" },
-        { puzzle: "⬆️🔴　→　➡️🔵　→　⬇️🟢　→　？", options: ["⬅️🔴", "⬅️🔵", "⬆️🔴", "⬇️🟡"], correct: 0, exp: "矢印は90度回転し、色は「赤→青→緑」の順でループしています。" },
         { puzzle: "⬛　⬜　⬛\n⬜　⬛　⬜\n⬛　⬜　？", options: ["⬛", "⬜", "🔷", "🔸"], correct: 0, exp: "白と黒が交互に並ぶチェス盤模様の補完です。" },
         { puzzle: "🕒　→　⑥　→　⑨　→　？", options: ["🕒", "⑥", "⑨", "⑫"], correct: 3, exp: "時間が3時間ずつ等間隔で進んでいます。" },
         { puzzle: "⭐⭐🌙　→　⭐⭐⭐　→　⭐⭐⭐⭐　→　？", options: ["⭐⭐⭐⭐⭐", "⭐⭐⭐⭐🌙", "⭐⭐⭐🌙🌙", "🌙🌙🌙🌙🌙"], correct: 0, exp: "星が1つ増え、月が1つ減って消滅しています。" },
-        { puzzle: "🔴　＋　🔵　＝　🟣\n🟡　＋　🔵　＝　🟢\n🔴　＋　🟡　＝　？", options: ["🧡", "🟤", "🖤", "⚪"], correct: 0, exp: "色彩のブレンドです。赤と黄を混ぜるとオレンジになります。" },
-        { puzzle: "［🔴］　→　（⬛）　→　［🔺］　→　？", options: ["［🌟］", "（🌟）", "［🟢］", "（🔴）"], correct: 1, exp: "外枠が［］と（）で入れ替わり、中身が変化しています。" },
+        { puzzle: "［🔴］　→　（⬛）　→　［🔺］　→　？", options: ["［🌟］", "（🌟）", "［🟢］", "（🔴）"], correct: 3, exp: "外枠が［］と（）で交互に入れ替わり、中身が変化しています。" },
         { puzzle: "🫱　→　🫲　→　🫱　→　？", options: ["🫱", "🫲", "👆", "👇"], correct: 1, exp: "手の向きが左右反転で交互に繰り返されています。" },
-        { puzzle: "🍏🍏🍏　＝　９\n🍎🍎　　＝　４\n🍊　　　＝　？", options: ["１", "２", "３", "０"], correct: 0, exp: "個数の2乗（3の2乗=9）が答えです。1の2乗は1になります。" },
         { puzzle: "🔶　→　🔶🔶🔶　→　🔶🔶🔶🔶🔶　→　？", options: ["６個", "７個", "８個", "１個"], correct: 1, exp: "要素の数が奇数（1,3,5）で増加しているため、次は7個です。" },
         { puzzle: "🔵🔵🔵　→　🔵🔵　→　🔵　→　？", options: ["なし", "🔵", "🔴", "🔳"], correct: 0, exp: "個数が3→2→1と減少しているため、最後は0(消滅)になります。" },
-        { puzzle: "◯🔴　→　⬜🔵　→　△🟢　→　？", options: ["☆🟡", "◯🟡", "⬜🔴", "△🔵"], correct: 0, exp: "形状と色の両方が新しいものへ遷移します。" },
         { puzzle: "🟥　🔺　🟥\n🟦　🔹　🟦\n🟩　🟢　？", options: ["🟢", "🔺", "🟩", "🔷"], correct: 2, exp: "左右が同じ色でサンドイッチされる構造です。" },
         { puzzle: "🔲　→　🔳　→　🔲　→　？", options: ["🔲", "🔳", "⬜", "⬛"], correct: 1, exp: "中心と外枠の色反転が交互に繰り返されています。" },
+
+        // --- 中盤 21〜30 (数学的法則・数列・ウェイト2.0) ---
+        { puzzle: "２，３，５，７，１１，？", options: ["１２", "１３", "１４", "１５"], correct: 1, exp: "「素数」が順番に並んでいます。11の次は13です。" },
+        { puzzle: "１→２→３→５→８→？", options: ["１０", "１１", "１２", "１３"], correct: 3, exp: "フィボナッチ数列。前の2つの数字の和が次になるため、5+8=13になります。" },
+        { puzzle: "１→２→４→７→１１→１６→？", options: ["２０", "２１", "２２", "２３"], correct: 2, exp: "足される数が「+1, +2, +3...」と増える階差数列です。最後は16+6=22です。" },
+        { puzzle: "２　，　４　，　８\n３　，　９　，　２７\n４　，　１６，　？", options: ["３２", "４８", "６４", "８０"], correct: 2, exp: "各行の累乗数列（xの1乗, 2乗, 3乗）です。4×4×4＝64が入ります。" },
+        { puzzle: "１０１０　→　０１０１　→　１０１０　→　？", options: ["１０１０", "０１０１", "１１１１", "００００"], correct: 1, exp: "0と1のビット反転が交互に行われています。" },
+        { puzzle: "🍏🍏🍏　＝　９\n🍎🍎　　＝　４\n🍊　　　＝　？", options: ["１", "２", "３", "０"], correct: 0, exp: "個数の2乗（3の2乗=9）が答えです。1の2乗は1になります。" },
+        { puzzle: "３　＝　🔺\n４　＝　⬜\n５　＝　⬠\n６　＝　？", options: ["◯", "🔺", "⬡", "🌟"], correct: 2, exp: "数字がそのまま図形の角の数を表しているため、6＝六角形(⬡)です。" },
+        { puzzle: "◯　＝　０\n🔺　＝　３\n⬜　＝　４\n⭐　＝　？", options: ["５", "６", "１０", "１２"], correct: 2, exp: "線の接続端（角）の数のロジックです。星(⭐)の尖った角と凹んだ角の合計は10個です。" },
         { puzzle: "１２：００　→　０１：３０　→　０３：００　→　？", options: ["04:00", "04:30", "05:00", "05:30"], correct: 1, exp: "1時間30分ずつ時間が順方向に進行しています。" },
+        { puzzle: "１　２　３\n２　３　１\n３　１　？", options: ["１", "２", "３", "４"], correct: 1, exp: "各行で「1,2,3」が重複せずに使われる循環ルールです。" },
+
+        // --- 終盤 31〜40 (高度なスライド・循環推論・ウェイト2.5) ---
         { puzzle: "⭐　→　⭐⭐⭐　→　⭐⭐⭐⭐⭐　→　？", options: ["⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐⭐⭐"], correct: 2, exp: "星の数が「1個→3個→5個」と2つずつ増えているため、次は7個です。" },
         { puzzle: "➕　➖　➗\n➖　➗　➕\n➗　➕　？", options: ["➕", "➖", "➗", "✖️"], correct: 1, exp: "縦横どの行・列を見ても記号が重複しない循環方格です。" },
-        { puzzle: "👍　→　☝️　→　👎　→　？", options: ["👉", "👈", "👆", "👇"], correct: 1, exp: "手のポーズが反時計回りに90度ずつ回転しています。" },
-        { puzzle: "Ａ１　→　Ｂ２　→　Ｃ３　→　？", options: ["Ｄ４", "Ｄ５", "Ｅ４", "Ｃ４"], correct: 0, exp: "アルファベットと数字が同時に進んでいます。" },
         { puzzle: "🟢🔺　→　🔺🟢　→　🟢🔺　→　？", options: ["🟢🔺", "🔺🟢", "🟢🟢", "🔺🔺"], correct: 1, exp: "2つの要素の位置が左右交互に入れ替わっています。" },
         { puzzle: "🟪　🟫　🟪\n🟫　🟪　🟫\n🟪　？　🟪", options: ["🟪", "🟫", "⬛", "⬜"], correct: 1, exp: "格子状に色が配置されるマトリクスの中心補完です。" },
         { puzzle: "◯　△　□\n□　◯　△\n△　□　？", options: ["◯", "△", "□", "☆"], correct: 0, exp: "各行・列に「◯」「△」「□」が重複せず配置される規則です。" },
         { puzzle: "📦　→　📭　→　📦　→　？", options: ["📦", "📭", "📬", "📮"], correct: 1, exp: "箱型とポスト型が交互に出現する基礎ループです。" },
-        { puzzle: "◯　→　☯️　→　◯　→　？", options: ["◯", "☯️", "☸️", "☮️"], correct: 1, exp: "図形のシンボル性が交互に切り替わっています。" },
-        { puzzle: "🔳🔳🔲　＋　🔲🔳🔳　＝　🔳🔲🔳\n🔳🔲🔳　＋　🔳🔲🔳　＝　？", options: ["🔲🔲🔲", "🔳🔳🔳", "🔳🔲🔳", "🔲🔳🔲"], correct: 0, exp: "排他的論理和(XOR)。同じもの同士を重ねると消えるため、すべて🔲になります。" },
-        { puzzle: "３　＝　🔺\n４　＝　⬜\n５　＝　⬠\n６　＝　？", options: ["◯", "🔺", "⬡", "🌟"], correct: 2, exp: "数字がそのまま図形の角の数を表しているため、6＝六角形(⬡)です。" },
-        { puzzle: "♠️♡♣️　→　♡♣️♠️　→　♣️♠️♡　→　？", options: ["♠️♡♣️", "♡♣️♠️", "♣️♠️♡", "♠️♣️♡"], correct: 0, exp: "記号が左に一つずつスライド移動しています。3回移動で元に戻ります。" },
-        { puzzle: "🔵　🔴　🟢\n🟢　🔵　🔴\n🔴　🟢　？", options: ["🔵", "🔴", "🟢", "🟡"], correct: 0, exp: "色が縦横で重複しないグリッドローテーションです。" },
-        { puzzle: "🔺　＋　🔻　＝　⏳\n▶️　＋　◀️　＝　？", options: ["🎀", "🌟", "🍀", "💎"], correct: 0, exp: "2つの三角形を結合させた形状類推です。合わせるとリボン(🎀)になります。" },
-        { puzzle: "１０１０　→　０１０１　→　１０１０　→　？", options: ["１０１０", "０１０１", "１１１１", "００００"], correct: 1, exp: "0と1のビット反転が交互に行われています。" },
-        { puzzle: "⭐　🌙　☀️\n☀️　⭐　🌙\n🌙　☀️　？", options: ["⭐", "🌙", "☀️", "☁️"], correct: 0, exp: "天体マークが右へスライドしながら循環しています。" },
-        { puzzle: "２　，　４　，　８\n３　，　９　，　２７\n４　，　１６，　？", options: ["３２", "４８", "６４", "８０"], correct: 2, exp: "各行の累乗数列です。4×4×4＝64が入ります。" },
-        { puzzle: "🖤　🤍　🖤\n🤍　🖤　🤍\n🖤　🤍　？", options: ["🖤", "🤍", "🔷", "🔶"], correct: 0, exp: "縦横の配列において色が反転対称となるパターンです。" },
-        { puzzle: "２，３，５，７，１１，？", options: ["１２", "１３", "１４", "１５"], correct: 1, exp: "「素数」が順番に並んでいます。11の次は13です。" },
-        { puzzle: "１→２→３→５→８→？", options: ["１０", "１１", "１２", "１３"], correct: 3, exp: "フィボナッチ数列。前の2つの数字の和が次になるため、5+8=13になります。" },
-        { puzzle: "１→２→４→７→１１→１６→？", options: ["２０", "２１", "２２", "２３"], correct: 2, exp: "足される数が「+1, +2, +3...」と増える階差数列です。最後は16+6=22です。" },
-        { puzzle: "◯　＝　０\n🔺　＝　３\n⬜　＝　４\n⭐　＝　？", options: ["５", "６", "１０", "１２"], correct: 2, exp: "線の接続端の数のロジックです。星(⭐)の尖った角は10個あります。" },
+        { puzzle: "♠️♡♣️　→　♡♣️♠️　→　♣️♠️♡　→　？", options: ["♠️♡♣️", "♡♣️♠️", "♣️♠️♡", "♠️♣️♡"], correct: 0, exp: "記号全体が左に一つずつスライド移動し、はみ出たものが右端に戻っています。" },
+        { puzzle: "🔵　🔴　🟢\n🟢　🔵　🔴\n🔴　🟢　？", options: ["🔵", "🔴", "🟢", "🟡"], correct: 0, exp: "色が右下斜めに向かって同じになるグリッド配列です。" },
+        { puzzle: "⭐　🌙　☀️\n☀️　⭐　🌙\n🌙　☀️　？", options: ["⭐", "🌙", "☀️", "☁️"], correct: 0, exp: "天体マークが右下へスライドしながら循環しています。" },
+        { puzzle: "🖤　🤍　🖤\n🤍　🖤　🤍\n🖤　🤍　？", options: ["🖤", "🤍", "🔷", "🔶"], correct: 0, exp: "縦横の配列において色が完全な反転対称となるパターンです。" },
+
+        // --- 最終盤 41〜50 (超難度・完全抽象ロジック・ウェイト3.0) ---
+        { puzzle: "▲△△　→　△▲△　→　△△▲　→　？", options: ["▲△△", "△▲△", "△△▲", "▲▲▲"], correct: 0, exp: "黒い三角が右へ1マスずつ移動し、端に到達すると左端へループします。" },
+        { puzzle: "（規則：重なると色が反転する）\n⬛⬜⬛ ＋ ⬜⬛⬜ ＝ ？", options: ["⬛⬜⬛", "⬜⬛⬜", "⬛⬛⬛", "⬜⬜⬜"], correct: 2, exp: "すべて異なる色が重なるため、全てが黒(または全て白)に統一される排他的論理和(XOR)です。" },
+        { puzzle: "⬆️🔴　→　➡️🔵　→　⬇️🟢　→　？", options: ["⬅️🟡", "⬅️🔴", "⬆️🟢", "⬇️🔵"], correct: 0, exp: "矢印が時計回りに90度回転すると同時に、色も別の色へシフトする二重規則です。" },
+        { puzzle: "🔳🔳🔲 ＋ 🔲🔳🔳 ＝ 🔳🔲🔳\n🔳🔲🔳 ＋ 🔳🔲🔳 ＝ ？", options: ["🔲🔲🔲", "🔳🔳🔳", "🔳🔲🔳", "🔲🔳🔲"], correct: 0, exp: "同じ図形同士を足すと「🔲」になり、違う図形だと「🔳」になる論理演算。全く同じものを足すため全て「🔲」になります。" },
         { puzzle: "↗️　→　↘️　→　↙️　→　？", options: ["↖️", "↗️", "↘️", "↙️"], correct: 0, exp: "斜め矢印が時計回りに90度ずつ回転しています。" },
-        { puzzle: "🔴＋🔵＝３\n🔵＋🟢＝５\n🟢＋🔴＝４\n🔴＋🔵＋🟢＝？", options: ["５", "６", "７", "８"], correct: 1, exp: "連立方程式。すべて足すと 2×(🔴+🔵+🟢)=12 となり、2で割ると6になります。" },
-        { puzzle: "１　２　３\n２　３　１\n３　１　？", options: ["１", "２", "３", "４"], correct: 1, exp: "各行で「1,2,3」が使われる単純な数独ルールです。" }
+        { puzzle: "⚫⚪⚪\n⚪⚫⚪\n⚪⚪⚫\n　↓\n⚪⚫⚪\n⚪⚪⚫\n⚫⚪⚪\n　↓\n？", options: ["⚪⚪⚫\n⚫⚪⚪\n⚪⚫⚪", "⚫⚪⚪\n⚪⚫⚪\n⚪⚪⚫", "⚪⚪⚪\n⚫⚫⚫\n⚪⚪⚪", "⚫⚫⚫\n⚪⚪⚪\n⚫⚫⚫"], correct: 0, exp: "黒い点が右下斜めに向かって移動し、枠外に出ると反対側から現れる(トーラス状の)2次元シフトです。" },
+        { puzzle: "ＡＢＣ　→　ＢＣＤ　→　ＣＤＥ　→　？", options: ["ＤＥＦ", "ＥＦＧ", "ＣＢＡ", "ＤＣＢ"], correct: 0, exp: "アルファベット群全体が+1ずつアルファベット順にスライドしています。" },
+        { puzzle: "🔴　＋　🔵　＝　🟣\n🟡　＋　🔵　＝　🟢\n🔴　＋　🟡　＝　？", options: ["🧡", "🟤", "🖤", "⚪"], correct: 0, exp: "色彩のブレンドです。赤と黄を混ぜるとオレンジ（🧡）になります。" },
+        { puzzle: "⬜　→　🟩　→　⬛　→　？", options: ["⬜", "🟥", "🟦", "🟨"], correct: 0, exp: "白（光の全反射）から緑（中間色）、そして黒（全吸収）へと変化したのち、再び白に戻る明度のループです。" },
+        { puzzle: "（最終問題：規則の統合）\n🔺🔵　→　🔻🔴　→　🔺🔵　→　？", options: ["🔻🔴", "🔺🔴", "🔻🔵", "🔺🔵"], correct: 0, exp: "図形の上下反転と、色の青・赤入れ替えが同時に発生する完全なフリップロジックです。" }
     ];
 
-    let iqCurrentIndex = 0, iqScore = 0, userIqSelections = [];
+    let iqCurrentIndex = 0, iqCorrectCount = 0, iqScoreRaw = 0, userIqSelections = [];
     const intervalTemplates = {
-        10: { title: "順調な滑り出しです！", msg: "ジャンルの変化に適応できています。この調子を維持しましょう！", badge: "🏆" },
-        20: { title: "認知の切り替えが鮮やかです", msg: "思考のショートカットに頼らず、論理を組み立てられています。", badge: "🧠" },
-        30: { title: "驚くべき集中力です！", msg: "疲労が溜まるポイントですが、回答精度が落ちていません。残り20問です。", badge: "🔥" },
-        40: { title: "最高IQの領域へ挑戦中", msg: "ここからはメンサレベルの超難問が混ざります。あなたの限界を測定します。", badge: "🚀" }
+        10: { title: "第1フェーズ突破", msg: "基礎的な法則の抽出は完璧です。ここからマトリクスが複雑化します。", badge: "🟢" },
+        20: { title: "第2フェーズ突破", msg: "素晴らしい空間認識力です。次は数学的直感と数列の領域に入ります。", badge: "🔵" },
+        30: { title: "第3フェーズ突破", msg: "論理演算エリアを抜けました。疲労が溜まる中、高い集中力を維持しています。", badge: "🟣" },
+        40: { title: "最終フェーズ到達", msg: "ここからの10問は超難度（ウェイト3.0倍）です。あなたの限界流動性知能を測定します。", badge: "🔥" }
     };
 
     function startIqTest() {
-        iqCurrentIndex = 0; iqScore = 0; userIqSelections = []; 
-        switchView('iq-quiz-view');
-        showIqQuestion();
+        iqCurrentIndex = 0; iqCorrectCount = 0; iqScoreRaw = 0; userIqSelections = []; 
+        switchView('iq-quiz-view'); showIqQuestion();
     }
 
     function showIqQuestion() {
@@ -452,13 +387,10 @@
         document.getElementById('iq-question-number').innerText = `第 ${iqCurrentIndex + 1} 問`;
         document.getElementById('iq-question-title').innerText = q.puzzle;
         
-        const optionsContainer = document.getElementById('iq-options');
-        optionsContainer.innerHTML = '';
+        const optionsContainer = document.getElementById('iq-options'); optionsContainer.innerHTML = '';
         q.options.forEach((opt, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'btn'; btn.style.marginBottom = '0'; btn.innerText = opt;
-            btn.onclick = () => handleIqAnswer(index);
-            optionsContainer.appendChild(btn);
+            const btn = document.createElement('button'); btn.className = 'btn'; btn.style.marginBottom = '0'; btn.innerText = opt;
+            btn.onclick = () => handleIqAnswer(index); optionsContainer.appendChild(btn);
         });
     }
 
@@ -467,7 +399,13 @@
         const isCorrect = selectedIndex === q.correct;
         userIqSelections.push({ questionNum: iqCurrentIndex + 1, puzzle: q.puzzle, options: q.options, correct: q.correct, exp: q.exp, selected: selectedIndex, isCorrect: isCorrect });
 
-        if (isCorrect) iqScore++;
+        if (isCorrect) {
+            iqCorrectCount++;
+            // 【新規】傾斜配点ロジック（0-9:1点, 10-19:1.5点, 20-29:2点, 30-39:2.5点, 40-49:3点 / 満点100点）
+            const weight = Math.floor(iqCurrentIndex / 10) * 0.5 + 1.0;
+            iqScoreRaw += weight;
+        }
+        
         iqCurrentIndex++;
 
         if (iqCurrentIndex % 10 === 0 && iqCurrentIndex < 50) {
@@ -487,18 +425,20 @@
 
     function showIqResult() {
         switchView('iq-result-view');
-        const calculatedIq = Math.round(100 + ((iqScore - 25) * 2));
+        
+        // 【新規】厳密なIQ計算式（100点満点でIQ140、0点でIQ70とする線形補間）
+        const calculatedIq = Math.round(70 + (iqScoreRaw / 100) * 70);
         document.getElementById('iq-score').innerText = calculatedIq;
         
-        let evalText = `50問中 ${iqScore} 問に正解しました。<br><br>`;
-        if(calculatedIq >= 130) evalText += "メンサ（MENSA）入会レベルの極めて優れた知能指数です。";
-        else if(calculatedIq >= 110) evalText += "優秀な知能指数です。論理的組み立てや問題解決能力が高く、知的柔軟性に優れています。";
-        else evalText += "平均的な知能指数です。一般的なロジックの処理において十分な安定性を持っています。";
+        let evalText = `全50問中 ${iqCorrectCount} 問正解しました。<br>(獲得スコアポイント: ${iqScoreRaw} / 100)<br><br>`;
+        if(calculatedIq >= 130) evalText += "メンサ（MENSA）入会レベルの極めて優れた知能指数です。超難問を見事に突破しました。";
+        else if(calculatedIq >= 115) evalText += "優秀な知能指数です。高度な論理的組み立てや法則の抽出能力を持っています。";
+        else evalText += "平均的な知能指数です。基礎〜中級の法則性において安定した処理能力を示しました。";
         document.getElementById('iq-evaluation').innerHTML = evalText;
 
-        addExp('logic', iqScore * 0.1);
-        addExp('spatial', iqScore * 0.1);
-        addExp('accuracy', (iqScore / 50) * 2);
+        addExp('logic', iqCorrectCount * 0.1);
+        addExp('spatial', iqCorrectCount * 0.1);
+        addExp('accuracy', (iqCorrectCount / 50) * 2);
 
         const reviewSection = document.getElementById('iq-review-section');
         reviewSection.innerHTML = '<div class="review-title">❌ 間違えた問題の確認・解説</div>';
@@ -522,12 +462,8 @@
     }
 
     // ==================== 脳トレ処理 ====================
-    let currentDifficulty = 'MID';
-    let isAdvancedMode = false;
-    let brainCurrentQuestion = 1, brainCorrectAnswer = 0, brainUserResponse = "";
-    let brainFormulaText = "", brainStartTime, brainTimerInterval, penaltySeconds = 0;
-    let currentAccuracyScore = 0;
-    let inputLocked = false; 
+    let currentDifficulty = 'MID', isAdvancedMode = false, brainCurrentQuestion = 1, brainCorrectAnswer = 0, brainUserResponse = "";
+    let brainFormulaText = "", brainStartTime, brainTimerInterval, penaltySeconds = 0, currentAccuracyScore = 0, inputLocked = false; 
 
     function selectDifficulty(level) {
         currentDifficulty = level;
@@ -538,10 +474,8 @@
     function setupBrainGame() {
         isAdvancedMode = document.getElementById('adv-checkbox').checked;
         brainCurrentQuestion = 1; brainUserResponse = ""; penaltySeconds = 0; currentAccuracyScore = 0;
-        
         document.getElementById('mode-indicator').innerText = `MODE: ${currentDifficulty}${isAdvancedMode ? ' (+ADV)' : ''}`;
         document.getElementById('mode-indicator').style.color = isAdvancedMode ? '#ff9900' : '#2ea44f';
-
         switchView('brain-game-view');
         document.getElementById('brain-ready-ui').classList.remove('hidden');
         document.getElementById('brain-play-ui').classList.add('hidden');
@@ -551,125 +485,59 @@
         inputLocked = true; 
         document.getElementById('brain-ready-ui').classList.add('hidden');
         document.getElementById('brain-play-ui').classList.remove('hidden');
-        
         brainStartTime = performance.now();
         if (brainTimerInterval) clearInterval(brainTimerInterval);
-        brainTimerInterval = setInterval(() => {
-            document.getElementById('brain-timer').innerText = ((performance.now() - brainStartTime) / 1000).toFixed(1);
-        }, 100);
+        brainTimerInterval = setInterval(() => { document.getElementById('brain-timer').innerText = ((performance.now() - brainStartTime) / 1000).toFixed(1); }, 100);
         generateBrainQuestion();
-        
         setTimeout(() => { inputLocked = false; }, 400);
     }
 
     function generateBrainQuestion() {
-        brainUserResponse = "";
-        let num1, num2, opType;
-        
-        if (currentDifficulty === 'LOW') {
-            num1 = Math.floor(Math.random() * 9) + 1;
-            num2 = Math.floor(Math.random() * 9) + 1;
-            opType = Math.random() > 0.5 ? '+' : '-';
-        } else if (currentDifficulty === 'MID') {
-            const rand = Math.random();
-            if (rand < 0.4) { num1 = Math.floor(Math.random() * 89) + 10; num2 = Math.floor(Math.random() * 9) + 1; opType = '+'; }
-            else if (rand < 0.8) { num1 = Math.floor(Math.random() * 89) + 10; num2 = Math.floor(Math.random() * 9) + 1; opType = '-'; }
-            else { num1 = Math.floor(Math.random() * 9) + 1; num2 = Math.floor(Math.random() * 9) + 1; opType = '*'; }
-        } else { 
-            const rand = Math.random();
-            if (rand < 0.3) { num1 = Math.floor(Math.random() * 49) + 10; num2 = Math.floor(Math.random() * 49) + 10; opType = '+'; }
-            else if (rand < 0.6) { num1 = Math.floor(Math.random() * 49) + 10; num2 = Math.floor(Math.random() * 49) + 1; opType = '-'; }
-            else if (rand < 0.8) { num1 = Math.floor(Math.random() * 12) + 2; num2 = Math.floor(Math.random() * 9) + 2; opType = '*'; }
-            else { num2 = Math.floor(Math.random() * 9) + 2; const ans = Math.floor(Math.random() * 9) + 2; num1 = num2 * ans; opType = '/'; }
-        }
-
-        if (opType === '+') { brainFormulaText = `${num1} + ${num2}`; brainCorrectAnswer = num1 + num2; }
-        else if (opType === '-') { const mx = Math.max(num1, num2), mn = Math.min(num1, num2); brainFormulaText = `${mx} - ${mn}`; brainCorrectAnswer = mx - mn; }
-        else if (opType === '*') { brainFormulaText = `${num1} × ${num2}`; brainCorrectAnswer = num1 * num2; }
-        else if (opType === '/') { brainFormulaText = `${num1} ÷ ${num2}`; brainCorrectAnswer = num1 / num2; }
-
-        document.getElementById('formula').innerText = brainFormulaText;
-        document.getElementById('brain-progress').innerText = brainCurrentQuestion;
-        renderNumPad();
+        brainUserResponse = ""; let num1, num2, opType;
+        if (currentDifficulty === 'LOW') { num1 = Math.floor(Math.random() * 9) + 1; num2 = Math.floor(Math.random() * 9) + 1; opType = Math.random() > 0.5 ? '+' : '-'; } 
+        else if (currentDifficulty === 'MID') { const rand = Math.random(); if (rand < 0.4) { num1 = Math.floor(Math.random() * 89) + 10; num2 = Math.floor(Math.random() * 9) + 1; opType = '+'; } else if (rand < 0.8) { num1 = Math.floor(Math.random() * 89) + 10; num2 = Math.floor(Math.random() * 9) + 1; opType = '-'; } else { num1 = Math.floor(Math.random() * 9) + 1; num2 = Math.floor(Math.random() * 9) + 1; opType = '*'; } } 
+        else { const rand = Math.random(); if (rand < 0.3) { num1 = Math.floor(Math.random() * 49) + 10; num2 = Math.floor(Math.random() * 49) + 10; opType = '+'; } else if (rand < 0.6) { num1 = Math.floor(Math.random() * 49) + 10; num2 = Math.floor(Math.random() * 49) + 1; opType = '-'; } else if (rand < 0.8) { num1 = Math.floor(Math.random() * 12) + 2; num2 = Math.floor(Math.random() * 9) + 2; opType = '*'; } else { num2 = Math.floor(Math.random() * 9) + 2; const ans = Math.floor(Math.random() * 9) + 2; num1 = num2 * ans; opType = '/'; } }
+        if (opType === '+') { brainFormulaText = `${num1} + ${num2}`; brainCorrectAnswer = num1 + num2; } else if (opType === '-') { const mx = Math.max(num1, num2), mn = Math.min(num1, num2); brainFormulaText = `${mx} - ${mn}`; brainCorrectAnswer = mx - mn; } else if (opType === '*') { brainFormulaText = `${num1} × ${num2}`; brainCorrectAnswer = num1 * num2; } else if (opType === '/') { brainFormulaText = `${num1} ÷ ${num2}`; brainCorrectAnswer = num1 / num2; }
+        document.getElementById('formula').innerText = brainFormulaText; document.getElementById('brain-progress').innerText = brainCurrentQuestion; renderNumPad();
     }
 
     function renderNumPad() {
         const pad = document.getElementById('num-pad'); pad.innerHTML = '';
         let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
         if (isAdvancedMode) nums.sort(() => Math.random() - 0.5);
-
         for (let i = 0; i < 9; i++) createPadBtn(pad, nums[i]);
         createPadBtn(pad, 'C', '#363b42'); createPadBtn(pad, nums[9]); createPadBtn(pad, 'Enter', 'var(--brain-color)', '#000');
     }
 
     function createPadBtn(container, val, bg, color) {
-        const btn = document.createElement('button');
-        btn.className = 'btn pad-btn'; btn.innerText = val;
+        const btn = document.createElement('button'); btn.className = 'btn pad-btn'; btn.innerText = val;
         if(bg) btn.style.background = bg; if(color) btn.style.color = color; if(val === 'Enter') btn.style.border = 'none';
-        
         btn.onclick = (e) => { 
-            e.preventDefault(); 
-            if (inputLocked) return; 
-
-            if (val === 'C') { 
-                brainUserResponse = ""; document.getElementById('formula').innerText = brainFormulaText; 
-            } else if (val === 'Enter') {
-                checkBrainAnswer(); 
-            } else { 
-                if(brainUserResponse.length < 4) brainUserResponse += val; 
-                document.getElementById('formula').innerText = brainUserResponse; 
-            } 
-        };
-        container.appendChild(btn);
+            e.preventDefault(); if (inputLocked) return; 
+            if (val === 'C') { brainUserResponse = ""; document.getElementById('formula').innerText = brainFormulaText; } 
+            else if (val === 'Enter') { checkBrainAnswer(); } 
+            else { if(brainUserResponse.length < 4) brainUserResponse += val; document.getElementById('formula').innerText = brainUserResponse; } 
+        }; container.appendChild(btn);
     }
 
     function checkBrainAnswer() {
-        const panel = document.getElementById('brain-panel');
-        if (brainUserResponse === "") return; 
-        
+        const panel = document.getElementById('brain-panel'); if (brainUserResponse === "") return; 
         if (parseInt(brainUserResponse) === brainCorrectAnswer) {
-            currentAccuracyScore += 1;
-            brainCurrentQuestion++;
+            currentAccuracyScore += 1; brainCurrentQuestion++;
             if (brainCurrentQuestion <= 20) { generateBrainQuestion(); } 
             else {
-                clearInterval(brainTimerInterval);
-                const realTime = (performance.now() - brainStartTime) / 1000;
-                const finalTime = realTime + penaltySeconds;
-
-                switchView('brain-result-view');
-                let timeText = `${finalTime.toFixed(1)} 秒`;
+                clearInterval(brainTimerInterval); const realTime = (performance.now() - brainStartTime) / 1000; const finalTime = realTime + penaltySeconds;
+                switchView('brain-result-view'); let timeText = `${finalTime.toFixed(1)} 秒`;
                 if (penaltySeconds > 0) timeText += `<br><span style="font-size:16px; color:#ff9900;">(内ペナルティ: +${penaltySeconds}秒)</span>`;
                 document.getElementById('brain-final-time').innerHTML = timeText;
-
-                let baseSec = 20;
-                let slope = 1.0;
-
-                if (!isAdvancedMode) {
-                    if (currentDifficulty === 'LOW') { baseSec = 18; slope = 1.2; }
-                    else if (currentDifficulty === 'MID') { baseSec = 26; slope = 1.2; }
-                    else if (currentDifficulty === 'HIGH') { baseSec = 40; slope = 1.2; }
-                } else {
-                    if (currentDifficulty === 'LOW') { baseSec = 26; slope = 1.0; }
-                    else if (currentDifficulty === 'MID') { baseSec = 38; slope = 1.0; }
-                    else if (currentDifficulty === 'HIGH') { baseSec = 55; slope = 1.0; }
-                }
-
-                let brainAge = 20;
-                if (finalTime > baseSec) {
-                    brainAge = Math.round(20 + (finalTime - baseSec) * slope);
-                }
-                if (brainAge > 80) brainAge = 80;
-
+                let baseSec = 20, slope = 1.0;
+                if (!isAdvancedMode) { if (currentDifficulty === 'LOW') { baseSec = 18; slope = 1.2; } else if (currentDifficulty === 'MID') { baseSec = 26; slope = 1.2; } else if (currentDifficulty === 'HIGH') { baseSec = 40; slope = 1.2; } } 
+                else { if (currentDifficulty === 'LOW') { baseSec = 26; slope = 1.0; } else if (currentDifficulty === 'MID') { baseSec = 38; slope = 1.0; } else if (currentDifficulty === 'HIGH') { baseSec = 55; slope = 1.0; } }
+                let brainAge = 20; if (finalTime > baseSec) { brainAge = Math.round(20 + (finalTime - baseSec) * slope); } if (brainAge > 80) brainAge = 80;
                 document.getElementById('brain-age-eval').innerText = `あなたの脳年齢は【 ${brainAge} 歳 】です。`;
-
-                addExp('speed', (baseSec / finalTime) * 1.5);
-                addExp('accuracy', (currentAccuracyScore / 20) * 1.0 - (penaltySeconds * 0.1));
+                addExp('speed', (baseSec / finalTime) * 1.5); addExp('accuracy', (currentAccuracyScore / 20) * 1.0 - (penaltySeconds * 0.1));
             }
-        } else {
-            penaltySeconds += 2; brainUserResponse = "";
-            document.getElementById('formula').innerText = brainFormulaText;
-            panel.classList.remove('flash-error'); void panel.offsetWidth; panel.classList.add('flash-error');
-        }
+        } else { penaltySeconds += 2; brainUserResponse = ""; document.getElementById('formula').innerText = brainFormulaText; panel.classList.remove('flash-error'); void panel.offsetWidth; panel.classList.add('flash-error'); }
     }
 </script>
 </body>
