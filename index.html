@@ -307,44 +307,64 @@
 
     // ==================== 厳密設計されたIQテスト全50問 ====================
     const actualIqQuestions = [
-        // --- 序盤 1〜10 (基礎的法則・ボーナス問題含む) ---
+        // --- 序盤 1〜10 (基礎的法則・投影法含む) ---
         { puzzle: "◯　→　△　→　□　→　？", options: ["◯", "△", "□", "☆"], correct: 3, exp: "辺の数が「円(0)→三画→四角」と増えるため、次は星型(多角形)が入ります。" },
         { puzzle: "🔴　→　🔵　→　🟢　→　🔴　→　？", options: ["🔴", "🔵", "🟢", "🟡"], correct: 1, exp: "赤・青・緑の3色パターンがループしています。" },
         { puzzle: "⬆️　→　➡️　→　⬇️　→　？", options: ["⬆️", "➡️", "⬇️", "⬅️"], correct: 3, exp: "矢印の向きが時計回りに90度ずつ回転しています。" },
         { puzzle: "🟥　→　🟦<br>🔴　→　？", options: ["🔺", "🔷", "🔵", "🟡"], correct: 2, exp: "上が「赤から青」への変化であるため、赤い丸に対応するのは青い丸です。" },
         { puzzle: "左👈　右👉<br>上👆　下？", options: ["👈", "👉", "👆", "👇"], correct: 3, exp: "空間的な対比です。上に対するのは下を指す手になります。" },
         
-        // 【追加】ボーナス問題1：CSS Blob (何に見えるか)
+        // 高度化されたSVGロールシャッハ図形1
         { 
-            puzzle: `<div style="width:140px; height:120px; background:#c9d1d9; border-radius:30% 70% 70% 30% / 30% 30% 70% 70%; margin:20px auto; box-shadow:5px 5px 15px rgba(0,0,0,0.5);"></div>
-                     <div style="font-size:16px; color:#ff9900; text-align:center;">【ボーナス問題】<br>この絵で最初に何が見えますか？</div>`, 
-            options: ["石・岩", "雲・煙", "動物の顔", "人の横顔"], 
-            correct: -1, // どれでも正解になるフラグ
-            exp: "【投影法テスト】これは心理テストに使われる不定形図形です。論理的な正解はありません。あなたの創造性を評価しました。" 
+            puzzle: `<svg viewBox="-50 -50 100 100" style="width:160px; height:160px; fill:#c9d1d9; margin:10px auto; display:block; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));">
+                       <defs>
+                         <g id="ink1">
+                           <path d="M 0,-40 C -10,-45 -20,-30 -15,-20 C -30,-25 -40,-10 -35,5 C -45,15 -40,30 -25,25 C -30,40 -15,45 -10,30 C -5,45 0,40 0,30 Z"/>
+                           <circle cx="-15" cy="5" r="3" fill="#0d1117"/>
+                         </g>
+                       </defs>
+                       <use href="#ink1" />
+                       <use href="#ink1" transform="scale(-1, 1)" />
+                     </svg>
+                     <div style="font-size:16px; color:#c9d1d9; text-align:center;">この絵で最初に何が見えますか？</div>`, 
+            options: ["蝶々・蛾", "花・植物", "仮面・顔", "骨盤・内臓"], 
+            correct: -1, 
+            exp: "【投影法テスト】ロールシャッハテスト風の左右対称図形です。論理的な正解はありません。あなたの直感を評価しました。" 
         },
 
         { puzzle: "🔴　→　🔴🔴　→　🔴🔴🔴　→　？", options: ["🔴", "🔴🔴", "🔴🔴🔴", "🔴🔴🔴🔴"], correct: 3, exp: "記号の数が1つずつ純増しています。" },
-        { puzzle: "➖　＋　◯　＝　⨁<br>✖️　＋　◯　＝　？", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1, exp: "線を丸に重ね合わせる合成規則です。バツ印を入れると「⊗」になります。" },
+        
+        // 図形合成ロジック修正
+        { puzzle: "➕　＋　◯　＝　⨁<br>✖️　＋　◯　＝　？", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1, exp: "図形をそのまま重ね合わせる合成規則です。「＋」と「◯」で「⨁」になるため、「✖️」と「◯」を重ねると「⊗」になります。" },
         { puzzle: "🌗　→　🌑　→　🌓　→　🌕　→　？", options: ["🌗", "🌑", "🌓", "🌕"], correct: 0, exp: "月の満ち欠けが一定の周期で右回りに循環しています。" },
         
-        // 【追加】ボーナス問題2：SVG ロールシャッハ (何に見えるか)
+        // 高度化されたSVGロールシャッハ図形2
         { 
-            puzzle: `<svg viewBox="0 0 100 100" style="width:140px; height:140px; fill:#c9d1d9; margin:10px auto; display:block;">
-                       <path d="M50 10 C 20 0, 0 40, 20 80 C 40 100, 45 60, 50 50 C 55 60, 60 100, 80 80 C 100 40, 80 0, 50 10 Z"/>
-                       <circle cx="35" cy="40" r="5" fill="#0d1117" />
-                       <circle cx="65" cy="40" r="5" fill="#0d1117" />
+            puzzle: `<svg viewBox="-50 -50 100 100" style="width:160px; height:160px; fill:#8b949e; margin:10px auto; display:block; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));">
+                       <defs>
+                         <g id="ink2">
+                           <path d="M 0,-20 C -25,-50 -50,-10 -30,10 C -50,30 -20,50 -10,20 C -15,45 -5,50 0,35 Z"/>
+                           <circle cx="-15" cy="15" r="4" fill="#0d1117"/>
+                           <ellipse cx="-25" cy="-5" rx="2" ry="5" fill="#0d1117" transform="rotate(45 -25 -5)"/>
+                         </g>
+                       </defs>
+                       <use href="#ink2" />
+                       <use href="#ink2" transform="scale(-1, 1)" />
                      </svg>
-                     <div style="font-size:16px; color:#ff9900; text-align:center;">【ボーナス問題】<br>この絵で最初に何が見えますか？</div>`, 
-            options: ["蝶々・蛾", "花・植物", "仮面・顔", "骨盤・内臓"], 
+                     <div style="font-size:16px; color:#c9d1d9; text-align:center;">この絵で最初に何が見えますか？</div>`, 
+            options: ["石・岩", "雲・煙", "動物の顔", "人の横顔"], 
             correct: -1,
-            exp: "【投影法テスト】これはロールシャッハテスト風の左右対称図形です。論理的な正解はありません。あなたの直感を評価しました。" 
+            exp: "【投影法テスト】心理テストに使われる有機的図形です。論理的な正解はありません。あなたの創造性を評価しました。" 
         },
 
         // --- 中盤 11〜20 (2次元マトリクス・図形欠損パズル) ---
         { puzzle: "🔺🔴　｜　⬜🔴<br>🔺🔵　｜　？", options: ["⬜🔴", "🔺🔴", "⬜🔵", "🔺🔵"], correct: 2, exp: "縦の列は同じ色、横の行は同じ形状が並ぶマトリクスです。" },
-        { puzzle: "⬛　⬜　⬛<br>⬜　⬛　⬜<br>⬛　⬜　？", options: ["⬛", "⬜", "🔷", "🔸"], correct: 0, exp: "白と黒が交互に並ぶチェス盤模様の補完です。" },
-        { puzzle: "🕒　→　⑥　→　⑨　→　？", options: ["🕒", "⑥", "⑨", "⑫"], correct: 3, exp: "時間が3時間ずつ等間隔で進んでいます。" },
-        { puzzle: "⭐⭐🌙　→　⭐⭐⭐　→　⭐⭐⭐⭐　→　？", options: ["⭐⭐⭐⭐⭐", "⭐⭐⭐⭐🌙", "⭐⭐⭐🌙🌙", "🌙🌙🌙🌙🌙"], correct: 0, exp: "星が1つ増え、月が1つ減って消滅しています。" },
+        
+        // 時計問題の難易度上昇
+        { puzzle: "🕒　→　⑥　→　🕘　→　？", options: ["🕒", "🕕", "🕘", "🕛"], correct: 3, exp: "時間が3時間ずつ進んでいます（3時→6時→9時）。9時の次は12時（🕛）です。" },
+        
+        // 星と月のロジック可視化
+        { puzzle: "⭐🌙🌙　→　⭐⭐🌙　→　⭐⭐⭐　→　？", options: ["⭐⭐⭐⭐", "⭐⭐⭐⭐🌙", "🌙🌙🌙🌙", "⭐⭐⭐⭐⭐"], correct: 0, exp: "星が1つずつ増え、月が1つずつ減っていく法則です。最後は月が完全に消滅し、星が4つになります。" },
         
         { 
             puzzle: `<div style="display:grid; grid-template-columns:repeat(3, 40px); grid-template-rows:repeat(3, 40px); border:1px solid #555; margin:0 auto; width:fit-content; background:#000;">
@@ -377,7 +397,6 @@
         { puzzle: "🔶　→　🔶🔶🔶　→　🔶🔶🔶🔶🔶　→　？", options: ["６個", "７個", "８個", "１個"], correct: 1, exp: "要素の数が奇数（1,3,5）で増加しているため、次は7個です。" },
         { puzzle: "🔵🔵🔵　→　🔵🔵　→　🔵　→　？", options: ["なし", "🔵", "🔴", "🔳"], correct: 0, exp: "個数が3→2→1と減少しているため、最後は0(消滅)になります。" },
         
-        // 【追加】パターン欠損問題（菱形模様）
         {
             puzzle: `<div style="width:160px; height:120px; border:1px solid #555; background-image: radial-gradient(#c9d1d9 15%, transparent 16%), radial-gradient(#c9d1d9 15%, transparent 16%); background-size: 20px 20px; background-position: 0 0, 10px 10px; position:relative; margin:0 auto; overflow:hidden;">
                         <div style="position:absolute; right:-10px; bottom:-10px; width:80px; height:70px; background:#161b22; border:2px dashed #ff9900; display:flex; align-items:center; justify-content:center; color:#ff9900; font-size:24px; font-weight:bold;">？</div>
@@ -391,6 +410,7 @@
         },
         
         { puzzle: "🔲　→　🔳　→　🔲　→　？", options: ["🔲", "🔳", "⬜", "⬛"], correct: 1, exp: "中心と外枠の色反転が交互に繰り返されています。" },
+        { puzzle: "⬛　⬜　⬛<br>⬜　⬛　⬜<br>⬛　⬜　？", options: ["⬛", "⬜", "🔷", "🔸"], correct: 0, exp: "白と黒が交互に並ぶチェス盤模様の補完です。" },
 
         // --- 中盤 21〜30 (数学的法則・数列・図形パズル) ---
         { puzzle: "２，３，５，７，１１，？", options: ["１２", "１３", "１４", "１５"], correct: 1, exp: "「素数」が順番に並んでいます。11の次は13です。" },
@@ -450,7 +470,6 @@
         { puzzle: "♠️♡♣️　→　♡♣️♠️　→　♣️♠️♡　→　？", options: ["♠️♡♣️", "♡♣️♠️", "♣️♠️♡", "♠️♣️♡"], correct: 0, exp: "記号全体が左に一つずつスライド移動し、はみ出たものが右端に戻っています。" },
         { puzzle: "🔵　🔴　🟢<br>🟢　🔵　🔴<br>🔴　🟢　？", options: ["🔵", "🔴", "🟢", "🟡"], correct: 0, exp: "色が右下斜めに向かって同じになるグリッド配列です。" },
         
-        // 【追加】SVGマトリクス1（図形の合成）
         {
             puzzle: `<div style="display:grid; grid-template-columns:repeat(3, 50px); gap:10px; margin:0 auto; width:fit-content; background:#161b22; padding:15px; border-radius:8px;">
               <svg viewBox="0 0 50 50"><rect x="5" y="5" width="40" height="40" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>
@@ -473,7 +492,6 @@
             ], correct: 0, exp: "各行において、左の図形と中央の図形を「合成（足し算）」したものが右の図形になります。"
         },
 
-        // 【追加】SVGマトリクス2（数独的配置）
         {
             puzzle: `<div style="display:grid; grid-template-columns:repeat(3, 50px); gap:10px; margin:0 auto; width:fit-content; background:#161b22; padding:15px; border-radius:8px;">
               <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3" stroke-dasharray="5,5"/><rect x="20" y="20" width="10" height="10" fill="#c9d1d9"/></svg>
@@ -499,7 +517,10 @@
         { puzzle: "🖤　🤍　🖤<br>🤍　🖤　🤍<br>🖤　🤍　？", options: ["🖤", "🤍", "🔷", "🔶"], correct: 0, exp: "縦横の配列において色が完全な反転対称となるパターンです。" },
 
         // --- 最終盤 41〜50 (超難度・完全抽象ロジック) ---
-        { puzzle: "（規則：重なると色が反転する）<br>⬛⬜⬛ ＋ ⬜⬛⬜ ＝ ？", options: ["⬛⬜⬛", "⬜⬛⬜", "⬛⬛⬛", "⬜⬜⬜"], correct: 2, exp: "すべて異なる色が重なるため、全てが黒(または全て白)に統一される排他的論理和(XOR)です。" },
+        
+        // 【修正完了】排他的論理和（XOR）の厳格化
+        { puzzle: "（規則：２つの図形を重ね合わせ、共通する部分は消え、異なる部分だけが残る）<br><br>▣　＋　□　＝　■<br>◨　＋　⬛　＝　？", options: ["◧", "◨", "⬜", "⬛"], correct: 0, exp: "排他的論理和（XOR）の規則です。左半分が黒い「◨」と、全体が黒い「⬛」を重ねると、左半分は共通するため消滅し、右半分だけが黒く残るため「◧」になります。" },
+        
         { puzzle: "⬆️🔴　→　➡️🔵　→　⬇️🟢　→　？", options: ["⬅️🟡", "⬅️🔴", "⬆️🟢", "⬇️🔵"], correct: 0, exp: "矢印が時計回りに90度回転すると同時に、色も別の色へシフトする二重規則です。" },
         { puzzle: "🔳🔳🔲 ＋ 🔲🔳🔳 ＝ 🔳🔲🔳<br>🔳🔲🔳 ＋ 🔳🔲🔳 ＝ ？", options: ["🔲🔲🔲", "🔳🔳🔳", "🔳🔲🔳", "🔲🔳🔲"], correct: 0, exp: "同じ図形同士を足すと「🔲」になり、違う図形だと「🔳」になる論理演算。全く同じものを足すため全て「🔲」になります。" },
         { puzzle: "↗️　→　↘️　→　↙️　→　？", options: ["↖️", "↗️", "↘️", "↙️"], correct: 0, exp: "斜め矢印が時計回りに90度ずつ回転しています。" },
@@ -541,7 +562,6 @@
 
     function handleIqAnswer(selectedIndex) {
         const q = actualIqQuestions[iqCurrentIndex];
-        // ボーナス問題 (-1) は無条件で正解扱いとする
         const isCorrect = (selectedIndex === q.correct) || (q.correct === -1);
         userIqSelections.push({ questionNum: iqCurrentIndex + 1, puzzle: q.puzzle, options: q.options, correct: q.correct, exp: q.exp, selected: selectedIndex, isCorrect: isCorrect });
 
@@ -589,7 +609,7 @@
         
         let wrongCount = 0;
         userIqSelections.forEach(record => {
-            if (!record.isCorrect && record.correct !== -1) { // ボーナス問題はレビューに出さない
+            if (!record.isCorrect && record.correct !== -1) { 
                 wrongCount++;
                 const card = document.createElement('div'); card.className = 'review-card';
                 card.innerHTML = `
