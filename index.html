@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neo Brain & IQ Platform (Final Complete)</title>
+    <title>Neo Brain & IQ Platform (Fixed Full)</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -182,9 +182,7 @@
         40: { title: "最高IQの領域へ挑戦中", msg: "ここから先はIQ130以上の突破率が15%未満の超難問エリアです。あなたの脳の限界を測定します。", badge: "🚀" }
     };
 
-    // ==================== 1〜50問 完全リアルデータ ====================
     const actualIqQuestions = [
-        // 1-10: 初級（入門・自尊心向上ステージ）
         { id: 1, puzzle: "◯  →  △  →  □  →  ？", options: ["◯", "△", "□", "☆"], correct: 3 },
         { id: 2, puzzle: "🔴  →  🔵  →  🟢  →  🔴  →  🔵  →  ？", options: ["🔴", "🔵", "🟢", "🟡"], correct: 2 },
         { id: 3, puzzle: "🟥 ＝ 🟦<br>🔺 ＝ ？", options: ["🔻", "🔷", "🔹", "🔺"], correct: 1 },
@@ -196,7 +194,6 @@
         { id: 9, puzzle: "➖ ＋ ◯ ＝ ⨁<br>✖️ ＋ ◯ ＝ ？", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1 },
         { id: 10, puzzle: "左［ 👈 ］ 右［ 👉 ］<br>上［ 👆 ］ 下［ ？ ］", options: ["👈", "👉", "👆", "👇"], correct: 3 },
         
-        // 11-20: 初中級（複合規則・テンポ重視ステージ）
         { id: 11, puzzle: "⬆️🔴  →  ➡️🔵  →  ⬇️🟢  →  ？", options: ["⬅️🔴", "⬅️🔵", "⬆️🔴", "⬇️🟡"], correct: 0 },
         { id: 12, puzzle: "行1：🔺🔴　⬜🔴<br>行2：🔺🔵　？", options: ["⬜🔴", "🔺🔴", "⬜🔵", "🔺🔵"], correct: 2 },
         { id: 13, puzzle: "⭐⭐🌙  →  ⭐⭐⭐  →  ⭐⭐⭐⭐  →  ？", options: ["⭐⭐⭐⭐⭐", "⭐⭐⭐⭐🌙", "⭐⭐⭐🌙🌙", "🌙🌙🌙🌙🌙"], correct: 0 },
@@ -208,7 +205,6 @@
         { id: 19, puzzle: "↗️  →  ↘️  →  ↙️  →  ？", options: ["↖️", "↗️", "↘️", "↙️"], correct: 0 },
         { id: 20, puzzle: "行1：🍏 🍏 🍏 ＝ 9<br>行2：🍎 🍎 ＝ 4<br>行3：🍊 ＝ ？", options: ["1", "2", "3", "0"], correct: 0 },
 
-        // 21-35: 中級（標準マトリクス・思考シフトステージ）
         { id: 21, puzzle: "行1：⬛ ⬜ ⬛<br>行2：⬜ ⬛ ⬜<br>行3：⬛ ⬜ ？", options: ["⬛", "⬜", "🔷", "🔸"], correct: 0 },
         { id: 22, puzzle: "🔵🔵🔵  →  🔵🔵  →  🔵  →  ？", options: ["空白(何もなし)", "🔵", "🔴", "🔳"], correct: 0 },
         { id: 23, puzzle: "◯🔴  →  ⬜🔵  →  △🟢  →  ？", options: ["☆🟡", "◯🟡", "⬜🔴", "△🔵"], correct: 0 },
@@ -217,7 +213,8 @@
         { id: 26, puzzle: "🔲  →  🔳  →  🔲  →  ？", options: ["🔲", "🔳", "⬜", "⬛"], correct: 1 },
         { id: 27, puzzle: "12:00  →  01:30  →  03:00  →  ？", options: ["04:00", "04:30", "05:00", "05:30"], correct: 1 },
         { id: 28, puzzle: "⭐  →  ⭐⭐  →  ⭐⭐⭐⭐  →  ？", options: ["⭐⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐⭐", "⭐⭐⭐⭐⭐⭐⭐⭐"], correct: 3 },
-        { id: 29: puzzle: "行1：➕ ➖ ➗<br>行2：➖ ➗ ➕<br>行3：➗ ➕ ？", options: ["➕", "➖", "➗", "✖️"], correct: 1 },
+        // 【タイポ修正箇所】「:」を「,」へ修正
+        { id: 29, puzzle: "行1：➕ ➖ ➗<br>行2：➖ ➗ ➕<br>行3：➗ ➕ ？", options: ["➕", "➖", "➗", "✖️"], correct: 1 },
         { id: 30, puzzle: "👍  →  ☝️  →  👎  →  ？", options: ["👉", "👈", "👆", "👇"], correct: 1 },
         { id: 31, puzzle: "A1  →  B2  →  C3  →  ？", options: ["D4", "D5", "E4", "C4"], correct: 0 },
         { id: 32, puzzle: "🟢🔺  →  🔺🟢  →  🟢🔺  →  ？", options: ["🟢🔺", "🔺🟢", "🟢🟢", "🔺🔺"], correct: 1 },
@@ -225,7 +222,6 @@
         { id: 34, puzzle: "📦  →  📭  →  📦  →  ？", options: ["📦", "📭", "📬", "📮"], correct: 1 },
         { id: 35, puzzle: "◯  →  ☯️  →  ◯  →  ？", options: ["◯", "☯️", "☸️", "☮️"], correct: 1 },
 
-        // 36-45: 上級（高知能・論理演算ステージ）
         { id: 36, puzzle: "行1：🔳🔳🔲 ＋ 🔲🔳🔳 ＝ 🔳🔲🔳<br>（規則：不一致＝🔳）<br>行2：🔳🔲🔳 ＋ 🔳🔲🔳 ＝ ？", options: ["🔲🔲🔲", "🔳🔳🔳", "🔳🔲🔳", "🔲🔳🔲"], correct: 0 },
         { id: 37, puzzle: "行1：◯ 　 △ 　 □<br>行2：□ 　 ◯ 　 △<br>行3：△ 　 □ 　 ？", options: ["◯", "△", "□", "☆"], correct: 0 },
         { id: 38, puzzle: "3 ＝ 🔺<br>4 ＝ ⬜<br>5 ＝ ⬠<br>6 ＝ ？", options: ["◯", "🔺", "⬡", "🌟"], correct: 2 },
@@ -237,7 +233,6 @@
         { id: 44, puzzle: "行1：2 , 4 , 8<br>行2：3 , 9 , 27<br>行3：4 , 16 , ？", options: ["32", "48", "64", "80"], correct: 2 },
         { id: 45, puzzle: "行1：🖤 🤍 🖤<br>行2：🤍 🖤 🤍<br>行3：🖤 🤍 ？", options: ["🖤", "🤍", "🔷", "🔶"], correct: 0 },
 
-        // 46-50: 超上級（天才・例外アルゴリズムステージ）
         { id: 46, puzzle: "2 , 3 , 5 , 7 , 11 , ？", options: ["12", "13", "14", "15"], correct: 1 },
         { id: 47, puzzle: "1 → 2 → 3 → 5 → 8 → ？", options: ["10", "11", "12", "13"], correct: 3 },
         { id: 48, puzzle: "◯ ＝ 0<br>🔺 ＝ 3<br>⬜ ＝ 4<br>⭐ ＝ ？", options: ["5", "6", "10", "12"], correct: 2 },
@@ -263,7 +258,6 @@
         }
     }
 
-    // ==================== IQテスト制御 ====================
     function startIqTest() {
         iqCurrentIndex = 0;
         iqScore = 0;
@@ -311,7 +305,6 @@
             showIqQuestion();
         } else {
             switchView('iq-result-view');
-            // 基礎点+偏差値換算（平均25問正解＝IQ100とする正規シミュレーション）
             const calculatedIq = Math.round(100 + ((iqScore - 25) * 2));
             document.getElementById('iq-score').innerText = calculatedIq;
             
@@ -332,7 +325,6 @@
         showIqQuestion();
     }
 
-    // ==================== 脳トレ制御 ====================
     function startBrainGame(advanced) {
         isAdvancedMode = advanced;
         brainCurrentQuestion = 1;
