@@ -46,17 +46,25 @@
         .progress-bar { width: 100%; height: 6px; background: #222; border-radius: 3px; margin-bottom: 20px; }
         .progress-fill { height: 100%; background: var(--accent-color); width: 0%; transition: width 0.3s; }
         
+        /* ----------------------------------------------------
+           見切れバグ修正箇所：
+           Flexboxの中央配置仕様（オーバー時に左が切れるバグ）を排除し、
+           安全なブロック配置（text-align: center）に変更。
+           縦の中央寄せはpaddingで担保。
+        ---------------------------------------------------- */
         .matrix-dummy-box {
-            width: 100%; min-height: 180px; background: #090d13; border: 1px solid var(--border-color);
-            border-radius: 8px; margin: 15px 0; padding: 20px 10px; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: var(--text-white); overflow-x: auto;
+            width: 100%; background: #090d13; border: 1px solid var(--border-color);
+            border-radius: 8px; margin: 15px 0; padding: 40px 10px; 
+            color: var(--text-white); overflow-x: auto;
+            text-align: center; display: block;
         }
         .puzzle-text {
             font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
             font-size: 22px; font-weight: bold; line-height: 1.8; letter-spacing: 2px;
-            text-align: left; white-space: pre; display: inline-block;
+            text-align: left; white-space: pre; display: inline-block; margin: 0 auto;
         }
-        
+        /* ---------------------------------------------------- */
+
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .formula { font-size: 44px; font-weight: bold; color: var(--text-white); letter-spacing: 2px; margin: 20px 0; }
         .num-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -141,7 +149,7 @@
         <div class="panel" style="padding: 15px 15px 25px 15px;">
             <p style="margin:0 0 10px 0; font-size:13px; color:#8b949e;">空白の「？」に当てはまるパターンを選択してください</p>
             <div class="matrix-dummy-box">
-                <div style="font-size:13px; color:#8b949e; margin-bottom:12px;" id="iq-question-number">第 1 問</div>
+                <div style="font-size:13px; color:#8b949e; margin-bottom:12px; text-align:center; display:block;" id="iq-question-number">第 1 問</div>
                 <div class="puzzle-text" id="iq-question-title">問題内容</div>
             </div>
         </div>
@@ -423,12 +431,13 @@
         if (wrongCount === 0) reviewSection.innerHTML += '<div style="color:var(--brain-color); font-size:14px; padding:10px;">素晴らしい！全問正解です。</div>';
     }
 
-    // ==================== 脳トレ処理（ゴーストクリック防御・UI分離） ====================
+    // ==================== 脳トレ処理 ====================
     let currentDifficulty = 'MID';
     let isAdvancedMode = false;
     let brainCurrentQuestion = 1, brainCorrectAnswer = 0, brainUserResponse = "";
     let brainFormulaText = "", brainStartTime, brainTimerInterval, penaltySeconds = 0;
     let currentAccuracyScore = 0;
+    let inputLocked = false; 
 
     function selectDifficulty(level) {
         currentDifficulty = level;
@@ -436,7 +445,6 @@
         document.getElementById(`btn-lv-${level.toLowerCase()}`).classList.add('active');
     }
 
-    // メニューからの遷移時、すぐにゲームを始めず「START」画面を挟む
     function setupBrainGame() {
         isAdvancedMode = document.getElementById('adv-checkbox').checked;
         brainCurrentQuestion = 1; brainUserResponse = ""; penaltySeconds = 0; currentAccuracyScore = 0;
@@ -445,14 +453,12 @@
         document.getElementById('mode-indicator').style.color = isAdvancedMode ? '#ff9900' : '#2ea44f';
 
         switchView('brain-game-view');
-        
-        // ゴーストクリックを吸収するための待機UIを表示
         document.getElementById('brain-ready-ui').classList.remove('hidden');
         document.getElementById('brain-play-ui').classList.add('hidden');
     }
 
-    // ユーザーが明確にSTARTを押した瞬間にタイマーと問題描画を開始
     function beginBrainTimer() {
+        inputLocked = true; 
         document.getElementById('brain-ready-ui').classList.add('hidden');
         document.getElementById('brain-play-ui').classList.remove('hidden');
         
@@ -462,6 +468,8 @@
             document.getElementById('brain-timer').innerText = ((performance.now() - brainStartTime) / 1000).toFixed(1);
         }, 100);
         generateBrainQuestion();
+        
+        setTimeout(() => { inputLocked = false; }, 400);
     }
 
     function generateBrainQuestion() {
@@ -477,7 +485,7 @@
             if (rand < 0.4) { num1 = Math.floor(Math.random() * 89) + 10; num2 = Math.floor(Math.random() * 9) + 1; opType = '+'; }
             else if (rand < 0.8) { num1 = Math.floor(Math.random() * 89) + 10; num2 = Math.floor(Math.random() * 9) + 1; opType = '-'; }
             else { num1 = Math.floor(Math.random() * 9) + 1; num2 = Math.floor(Math.random() * 9) + 1; opType = '*'; }
-        } else { // HIGH
+        } else { 
             const rand = Math.random();
             if (rand < 0.3) { num1 = Math.floor(Math.random() * 49) + 10; num2 = Math.floor(Math.random() * 49) + 10; opType = '+'; }
             else if (rand < 0.6) { num1 = Math.floor(Math.random() * 49) + 10; num2 = Math.floor(Math.random() * 49) + 1; opType = '-'; }
@@ -508,13 +516,26 @@
         const btn = document.createElement('button');
         btn.className = 'btn pad-btn'; btn.innerText = val;
         if(bg) btn.style.background = bg; if(color) btn.style.color = color; if(val === 'Enter') btn.style.border = 'none';
-        btn.onclick = () => { if (val === 'C') { brainUserResponse = ""; document.getElementById('formula').innerText = brainFormulaText; } else if (val === 'Enter') checkBrainAnswer(); else { if(brainUserResponse.length < 4) brainUserResponse += val; document.getElementById('formula').innerText = brainUserResponse; } };
+        
+        btn.onclick = (e) => { 
+            e.preventDefault(); 
+            if (inputLocked) return; 
+
+            if (val === 'C') { 
+                brainUserResponse = ""; document.getElementById('formula').innerText = brainFormulaText; 
+            } else if (val === 'Enter') {
+                checkBrainAnswer(); 
+            } else { 
+                if(brainUserResponse.length < 4) brainUserResponse += val; 
+                document.getElementById('formula').innerText = brainUserResponse; 
+            } 
+        };
         container.appendChild(btn);
     }
 
     function checkBrainAnswer() {
         const panel = document.getElementById('brain-panel');
-        if (brainUserResponse === "") return; // 空エンター無視
+        if (brainUserResponse === "") return; 
         
         if (parseInt(brainUserResponse) === brainCorrectAnswer) {
             currentAccuracyScore += 1;
@@ -530,21 +551,17 @@
                 if (penaltySeconds > 0) timeText += `<br><span style="font-size:16px; color:#ff9900;">(内ペナルティ: +${penaltySeconds}秒)</span>`;
                 document.getElementById('brain-final-time').innerHTML = timeText;
 
-                // 【修正】新・難易度別スケーリングロジック
-                let baseSec = 0;
+                let baseSec = 20;
                 let slope = 1.0;
 
-                if (currentDifficulty === 'LOW') {
-                    baseSec = 25; slope = 0.8;
-                } else if (currentDifficulty === 'MID') {
-                    baseSec = 40; slope = 0.6;
-                } else if (currentDifficulty === 'HIGH') {
-                    baseSec = 60; slope = 0.4;
-                }
-
-                // シャッフル（ADV）の猶予時間を加算
-                if (isAdvancedMode) {
-                    baseSec += (currentDifficulty === 'HIGH' ? 20 : 10);
+                if (!isAdvancedMode) {
+                    if (currentDifficulty === 'LOW') { baseSec = 18; slope = 1.2; }
+                    else if (currentDifficulty === 'MID') { baseSec = 26; slope = 1.2; }
+                    else if (currentDifficulty === 'HIGH') { baseSec = 40; slope = 1.2; }
+                } else {
+                    if (currentDifficulty === 'LOW') { baseSec = 26; slope = 1.0; }
+                    else if (currentDifficulty === 'MID') { baseSec = 38; slope = 1.0; }
+                    else if (currentDifficulty === 'HIGH') { baseSec = 55; slope = 1.0; }
                 }
 
                 let brainAge = 20;
