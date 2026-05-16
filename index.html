@@ -35,7 +35,6 @@
             transition: background-color 0.2s ease;
         }
 
-        /* --- レイアウト崩れ完全修正 --- */
         .btn {
             background: #21262d; border: 1px solid var(--border-color); border-radius: 8px;
             color: var(--text-white); font-size: 18px; font-weight: bold; padding: 15px;
@@ -57,7 +56,6 @@
             text-align: center; display: flex; flex-direction: column; justify-content: center;
         }
         
-        /* white-space: pre; を廃止し、自然な折り返しと中央寄せを実現 */
         .puzzle-text {
             font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
             font-size: 22px; font-weight: bold; line-height: 1.8; letter-spacing: 2px;
@@ -299,7 +297,6 @@
         ctx.closePath(); ctx.fill(); ctx.stroke();
     }
 
-    // ==================== グローバル制御 ====================
     let activeViewId = "menu-view";
     function switchView(viewId) {
         document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
@@ -310,17 +307,38 @@
 
     // ==================== 厳密設計されたIQテスト全50問 ====================
     const actualIqQuestions = [
-        // --- 序盤 1〜10 (基礎的法則) ---
+        // --- 序盤 1〜10 (基礎的法則・ボーナス問題含む) ---
         { puzzle: "◯　→　△　→　□　→　？", options: ["◯", "△", "□", "☆"], correct: 3, exp: "辺の数が「円(0)→三画→四角」と増えるため、次は星型(多角形)が入ります。" },
         { puzzle: "🔴　→　🔵　→　🟢　→　🔴　→　？", options: ["🔴", "🔵", "🟢", "🟡"], correct: 1, exp: "赤・青・緑の3色パターンがループしています。" },
         { puzzle: "⬆️　→　➡️　→　⬇️　→　？", options: ["⬆️", "➡️", "⬇️", "⬅️"], correct: 3, exp: "矢印の向きが時計回りに90度ずつ回転しています。" },
         { puzzle: "🟥　→　🟦<br>🔴　→　？", options: ["🔺", "🔷", "🔵", "🟡"], correct: 2, exp: "上が「赤から青」への変化であるため、赤い丸に対応するのは青い丸です。" },
         { puzzle: "左👈　右👉<br>上👆　下？", options: ["👈", "👉", "👆", "👇"], correct: 3, exp: "空間的な対比です。上に対するのは下を指す手になります。" },
-        { puzzle: "⭐️　→　🌙　→　⭐️　→　🌙　→　？", options: ["⭐️", "🌙", "☀️", "🌀"], correct: 0, exp: "星と月が交互に配置される単純な交互規則です。" },
+        
+        // 【追加】ボーナス問題1：CSS Blob (何に見えるか)
+        { 
+            puzzle: `<div style="width:140px; height:120px; background:#c9d1d9; border-radius:30% 70% 70% 30% / 30% 30% 70% 70%; margin:20px auto; box-shadow:5px 5px 15px rgba(0,0,0,0.5);"></div>
+                     <div style="font-size:16px; color:#ff9900; text-align:center;">【ボーナス問題】<br>この絵で最初に何が見えますか？</div>`, 
+            options: ["石・岩", "雲・煙", "動物の顔", "人の横顔"], 
+            correct: -1, // どれでも正解になるフラグ
+            exp: "【投影法テスト】これは心理テストに使われる不定形図形です。論理的な正解はありません。あなたの創造性を評価しました。" 
+        },
+
         { puzzle: "🔴　→　🔴🔴　→　🔴🔴🔴　→　？", options: ["🔴", "🔴🔴", "🔴🔴🔴", "🔴🔴🔴🔴"], correct: 3, exp: "記号の数が1つずつ純増しています。" },
         { puzzle: "➖　＋　◯　＝　⨁<br>✖️　＋　◯　＝　？", options: ["⨁", "⊗", "🔄", "👁️"], correct: 1, exp: "線を丸に重ね合わせる合成規則です。バツ印を入れると「⊗」になります。" },
         { puzzle: "🌗　→　🌑　→　🌓　→　🌕　→　？", options: ["🌗", "🌑", "🌓", "🌕"], correct: 0, exp: "月の満ち欠けが一定の周期で右回りに循環しています。" },
-        { puzzle: "👆　→　👉　→　👇　→　？", options: ["👈", "👉", "👆", "👇"], correct: 0, exp: "指の向きが時計回りに90度ずつ回転しています。" },
+        
+        // 【追加】ボーナス問題2：SVG ロールシャッハ (何に見えるか)
+        { 
+            puzzle: `<svg viewBox="0 0 100 100" style="width:140px; height:140px; fill:#c9d1d9; margin:10px auto; display:block;">
+                       <path d="M50 10 C 20 0, 0 40, 20 80 C 40 100, 45 60, 50 50 C 55 60, 60 100, 80 80 C 100 40, 80 0, 50 10 Z"/>
+                       <circle cx="35" cy="40" r="5" fill="#0d1117" />
+                       <circle cx="65" cy="40" r="5" fill="#0d1117" />
+                     </svg>
+                     <div style="font-size:16px; color:#ff9900; text-align:center;">【ボーナス問題】<br>この絵で最初に何が見えますか？</div>`, 
+            options: ["蝶々・蛾", "花・植物", "仮面・顔", "骨盤・内臓"], 
+            correct: -1,
+            exp: "【投影法テスト】これはロールシャッハテスト風の左右対称図形です。論理的な正解はありません。あなたの直感を評価しました。" 
+        },
 
         // --- 中盤 11〜20 (2次元マトリクス・図形欠損パズル) ---
         { puzzle: "🔺🔴　｜　⬜🔴<br>🔺🔵　｜　？", options: ["⬜🔴", "🔺🔴", "⬜🔵", "🔺🔵"], correct: 2, exp: "縦の列は同じ色、横の行は同じ形状が並ぶマトリクスです。" },
@@ -328,7 +346,6 @@
         { puzzle: "🕒　→　⑥　→　⑨　→　？", options: ["🕒", "⑥", "⑨", "⑫"], correct: 3, exp: "時間が3時間ずつ等間隔で進んでいます。" },
         { puzzle: "⭐⭐🌙　→　⭐⭐⭐　→　⭐⭐⭐⭐　→　？", options: ["⭐⭐⭐⭐⭐", "⭐⭐⭐⭐🌙", "⭐⭐⭐🌙🌙", "🌙🌙🌙🌙🌙"], correct: 0, exp: "星が1つ増え、月が1つ減って消滅しています。" },
         
-        // CSSパズル1：市松模様
         { 
             puzzle: `<div style="display:grid; grid-template-columns:repeat(3, 40px); grid-template-rows:repeat(3, 40px); border:1px solid #555; margin:0 auto; width:fit-content; background:#000;">
                 <div style="background:#c9d1d9;"></div><div style="background:#0d1117;"></div><div style="background:#c9d1d9;"></div>
@@ -341,12 +358,8 @@
                 `<div style="width:30px; height:30px; background:#0d1117; border:1px solid #555; margin:0 auto;"></div>`, 
                 `<div style="width:30px; height:30px; background:#8b949e; border:1px solid #555; margin:0 auto;"></div>`, 
                 `<div style="width:30px; height:30px; background:linear-gradient(45deg, #c9d1d9 50%, #0d1117 50%); border:1px solid #555; margin:0 auto;"></div>`
-            ], 
-            correct: 0, 
-            exp: "全体が白と黒の市松模様を形成しています。規則性に従うと、右下の欠損部分には「白」が入ります。" 
+            ], correct: 0, exp: "全体が白と黒の市松模様を形成しています。右下の欠損部分には「白」が入ります。" 
         },
-
-        // CSSパズル2：円の欠損
         {
             puzzle: `<div style="display:grid; grid-template-columns:40px 40px; gap:4px; margin:0 auto; width:fit-content;">
                 <div style="width:40px; height:40px; background:#58a6ff; border-radius:100% 0 0 0;"></div>
@@ -359,28 +372,34 @@
                 `<div style="width:25px; height:25px; background:#58a6ff; border-radius:100% 0 0 0; margin:0 auto;"></div>`,
                 `<div style="width:25px; height:25px; background:#58a6ff; border-radius:50%; margin:0 auto;"></div>`,
                 `<div style="width:25px; height:25px; background:#58a6ff; border-radius:0 100% 0 0; margin:0 auto;"></div>`
-            ],
-            correct: 0,
-            exp: "4つの図形を組み合わせると1つの大きな円になります。右下に必要なのは、右下に丸みを持つパーツです。"
+            ], correct: 0, exp: "4つの図形を組み合わせると1つの大きな円になります。右下に必要なのは、右下に丸みを持つパーツです。"
         },
-
         { puzzle: "🔶　→　🔶🔶🔶　→　🔶🔶🔶🔶🔶　→　？", options: ["６個", "７個", "８個", "１個"], correct: 1, exp: "要素の数が奇数（1,3,5）で増加しているため、次は7個です。" },
         { puzzle: "🔵🔵🔵　→　🔵🔵　→　🔵　→　？", options: ["なし", "🔵", "🔴", "🔳"], correct: 0, exp: "個数が3→2→1と減少しているため、最後は0(消滅)になります。" },
-        { puzzle: "🟥　🔺　🟥<br>🟦　🔹　🟦<br>🟩　🟢　？", options: ["🟢", "🔺", "🟩", "🔷"], correct: 2, exp: "左右が同じ色でサンドイッチされる構造です。" },
+        
+        // 【追加】パターン欠損問題（菱形模様）
+        {
+            puzzle: `<div style="width:160px; height:120px; border:1px solid #555; background-image: radial-gradient(#c9d1d9 15%, transparent 16%), radial-gradient(#c9d1d9 15%, transparent 16%); background-size: 20px 20px; background-position: 0 0, 10px 10px; position:relative; margin:0 auto; overflow:hidden;">
+                        <div style="position:absolute; right:-10px; bottom:-10px; width:80px; height:70px; background:#161b22; border:2px dashed #ff9900; display:flex; align-items:center; justify-content:center; color:#ff9900; font-size:24px; font-weight:bold;">？</div>
+                     </div><div style="font-size:14px; color:#8b949e; text-align:center; margin-top:10px;">パターンの欠損</div>`,
+            options: [
+                `<div style="width:60px; height:40px; background:linear-gradient(45deg, #c9d1d9 25%, transparent 25%, transparent 50%, #c9d1d9 50%, #c9d1d9 75%, transparent 75%, transparent); background-size:10px 10px; border:1px solid #555; margin:0 auto;"></div>`,
+                `<div style="width:60px; height:40px; background-image: radial-gradient(#c9d1d9 15%, transparent 16%), radial-gradient(#c9d1d9 15%, transparent 16%); background-size: 20px 20px; background-position: 0 0, 10px 10px; border:1px solid #555; margin:0 auto;"></div>`,
+                `<div style="width:60px; height:40px; border:1px solid #555; margin:0 auto;"></div>`,
+                `<div style="width:60px; height:40px; background-image: radial-gradient(transparent 15%, #c9d1d9 16%); background-size: 20px 20px; border:1px solid #555; margin:0 auto;"></div>`
+            ], correct: 1, exp: "背景全体がドット（菱形）の連続パターンで構成されています。欠損部分には同じ柄のピースが入ります。"
+        },
+        
         { puzzle: "🔲　→　🔳　→　🔲　→　？", options: ["🔲", "🔳", "⬜", "⬛"], correct: 1, exp: "中心と外枠の色反転が交互に繰り返されています。" },
 
         // --- 中盤 21〜30 (数学的法則・数列・図形パズル) ---
         { puzzle: "２，３，５，７，１１，？", options: ["１２", "１３", "１４", "１５"], correct: 1, exp: "「素数」が順番に並んでいます。11の次は13です。" },
         { puzzle: "１→２→３→５→８→？", options: ["１０", "１１", "１２", "１３"], correct: 3, exp: "フィボナッチ数列。前の2つの数字の和が次になるため、5+8=13になります。" },
         { puzzle: "１→２→４→７→１１→１６→？", options: ["２０", "２１", "２２", "２３"], correct: 2, exp: "足される数が「+1, +2, +3...」と増える階差数列です。最後は16+6=22です。" },
-
-        // CSSパズル3：サイズスケーリング
         {
             puzzle: `<div style="display:flex; gap:15px; align-items:center; justify-content:center; margin:20px 0;">
-                <div style="width:10px; height:10px; background:#c9d1d9;"></div>
-                <div style="font-size:20px;">→</div>
-                <div style="width:30px; height:30px; background:#c9d1d9;"></div>
-                <div style="font-size:20px;">→</div>
+                <div style="width:10px; height:10px; background:#c9d1d9;"></div><div style="font-size:20px;">→</div>
+                <div style="width:30px; height:30px; background:#c9d1d9;"></div><div style="font-size:20px;">→</div>
                 <div style="width:50px; height:50px; border:2px dashed #ff9900; display:flex; align-items:center; justify-content:center; color:#ff9900;">？</div>
             </div>`,
             options: [
@@ -388,18 +407,13 @@
                 `<div style="width:50px; height:50px; background:#c9d1d9; margin:0 auto;"></div>`,
                 `<div style="width:50px; height:10px; background:#c9d1d9; margin:0 auto;"></div>`,
                 `<div style="width:10px; height:50px; background:#c9d1d9; margin:0 auto;"></div>`
-            ],
-            correct: 1,
-            exp: "図形の面積（サイズ）が段階的に大きくなっています。次は最も大きい正方形が入ります。"
+            ], correct: 1, exp: "図形の面積（サイズ）が段階的に大きくなっています。次は最も大きい正方形が入ります。"
         },
-
         { puzzle: "１０１０　→　０１０１　→　１０１０　→　？", options: ["１０１０", "０１０１", "１１１１", "００００"], correct: 1, exp: "0と1のビット反転が交互に行われています。" },
         { puzzle: "🍏🍏🍏　＝　９<br>🍎🍎　　＝　４<br>🍊　　　＝　？", options: ["１", "２", "３", "０"], correct: 0, exp: "個数の2乗（3の2乗=9）が答えです。1の2乗は1になります。" },
         { puzzle: "３　＝　🔺<br>４　＝　⬜<br>５　＝　⬠<br>６　＝　？", options: ["◯", "🔺", "⬡", "🌟"], correct: 2, exp: "数字がそのまま図形の角の数を表しているため、6＝六角形(⬡)です。" },
         { puzzle: "◯　＝　０<br>🔺　＝　３<br>⬜　＝　４<br>⭐　＝　？", options: ["５", "６", "１０", "１２"], correct: 2, exp: "線の接続端（角）の数のロジックです。星(⭐)の尖った角と凹んだ角の合計は10個です。" },
         { puzzle: "１　２　３<br>２　３　１<br>３　１　？", options: ["１", "２", "３", "４"], correct: 1, exp: "各行で「1,2,3」が重複せずに使われる循環ルールです。" },
-
-        // CSSパズル4：対角線パターン
         {
             puzzle: `<div style="display:grid; grid-template-columns:repeat(3, 30px); gap:2px; margin:0 auto; width:fit-content; background:#161b22; padding:5px;">
                 <div style="background:#2ea44f; width:30px; height:30px;"></div><div style="background:#0d1117; width:30px; height:30px;"></div><div style="background:#0d1117; width:30px; height:30px;"></div>
@@ -411,18 +425,14 @@
                 `<div style="width:25px; height:25px; background:#2ea44f; border:1px solid #333; margin:0 auto;"></div>`,
                 `<div style="width:25px; height:25px; background:#ff55ff; border:1px solid #333; margin:0 auto;"></div>`,
                 `<div style="width:25px; height:25px; background:linear-gradient(45deg, #0d1117, #2ea44f); border:1px solid #333; margin:0 auto;"></div>`
-            ],
-            correct: 1,
-            exp: "緑色のブロックが左上から右下へ対角線上に配置されています。延長線上にあるため右下も「緑」が入ります。"
+            ], correct: 1, exp: "緑色のブロックが左上から右下へ対角線上に配置されています。延長線上にあるため右下も「緑」が入ります。"
         },
 
-        // --- 終盤 31〜40 (高度なスライド・循環推論) ---
+        // --- 終盤 31〜40 (高度なスライド・循環推論・本格SVGマトリクス) ---
         { puzzle: "➕　➖　➗<br>➖　➗　➕<br>➗　➕　？", options: ["➕", "➖", "➗", "✖️"], correct: 1, exp: "縦横どの行・列を見ても記号が重複しない循環方格です。" },
         { puzzle: "🟢🔺　→　🔺🟢　→　🟢🔺　→　？", options: ["🟢🔺", "🔺🟢", "🟢🟢", "🔺🔺"], correct: 1, exp: "2つの要素の位置が左右交互に入れ替わっています。" },
         { puzzle: "🟪　🟫　🟪<br>🟫　🟪　🟫<br>🟪　？　🟪", options: ["🟪", "🟫", "⬛", "⬜"], correct: 1, exp: "格子状に色が配置されるマトリクスの中心補完です。" },
         { puzzle: "◯　△　□<br>□　◯　△<br>△　□　？", options: ["◯", "△", "□", "☆"], correct: 0, exp: "各行・列に「◯」「△」「□」が重複せず配置される規則です。" },
-        
-        // CSSパズル5：グラデーションの回転
         {
             puzzle: `<div style="display:grid; grid-template-columns:40px 40px; gap:10px; margin:0 auto; width:fit-content; padding:10px;">
                 <div style="width:40px; height:40px; background:linear-gradient(0deg, #ff55ff 50%, #0d1117 50%); border:1px solid #555;"></div>
@@ -435,16 +445,58 @@
                 `<div style="width:30px; height:30px; background:linear-gradient(0deg, #ff55ff 50%, #0d1117 50%); border:1px solid #555; margin:0 auto;"></div>`,
                 `<div style="width:30px; height:30px; background:linear-gradient(90deg, #ff55ff 50%, #0d1117 50%); border:1px solid #555; margin:0 auto;"></div>`,
                 `<div style="width:30px; height:30px; background:#ff55ff; border:1px solid #555; margin:0 auto;"></div>`
-            ],
-            correct: 0,
-            exp: "図形の色分け（グラデーション）の境界線が時計回りに90度ずつ回転しています。"
+            ], correct: 0, exp: "図形の色分け（グラデーション）の境界線が時計回りに90度ずつ回転しています。"
         },
-
         { puzzle: "♠️♡♣️　→　♡♣️♠️　→　♣️♠️♡　→　？", options: ["♠️♡♣️", "♡♣️♠️", "♣️♠️♡", "♠️♣️♡"], correct: 0, exp: "記号全体が左に一つずつスライド移動し、はみ出たものが右端に戻っています。" },
         { puzzle: "🔵　🔴　🟢<br>🟢　🔵　🔴<br>🔴　🟢　？", options: ["🔵", "🔴", "🟢", "🟡"], correct: 0, exp: "色が右下斜めに向かって同じになるグリッド配列です。" },
-        { puzzle: "⭐　🌙　☀️<br>☀️　⭐　🌙<br>🌙　☀️　？", options: ["⭐", "🌙", "☀️", "☁️"], correct: 0, exp: "天体マークが右下へスライドしながら循環しています。" },
+        
+        // 【追加】SVGマトリクス1（図形の合成）
+        {
+            puzzle: `<div style="display:grid; grid-template-columns:repeat(3, 50px); gap:10px; margin:0 auto; width:fit-content; background:#161b22; padding:15px; border-radius:8px;">
+              <svg viewBox="0 0 50 50"><rect x="5" y="5" width="40" height="40" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>
+              <svg viewBox="0 0 50 50"><rect x="15" y="15" width="20" height="20" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>
+              <svg viewBox="0 0 50 50"><rect x="5" y="5" width="40" height="40" fill="none" stroke="#c9d1d9" stroke-width="3"/><rect x="15" y="15" width="20" height="20" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>
+              
+              <svg viewBox="0 0 50 50"><polygon points="25,5 45,25 25,45 5,25" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>
+              <svg viewBox="0 0 50 50"><polygon points="25,15 35,25 25,35 15,25" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>
+              <svg viewBox="0 0 50 50"><polygon points="25,5 45,25 25,45 5,25" fill="none" stroke="#c9d1d9" stroke-width="3"/><polygon points="25,15 35,25 25,35 15,25" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>
+
+              <svg viewBox="0 0 50 50"><polygon points="25,5 45,45 5,45" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>
+              <svg viewBox="0 0 50 50"><polygon points="25,20 35,40 15,40" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>
+              <div style="display:flex; align-items:center; justify-content:center; border:2px dashed #ff9900; color:#ff9900; font-size:24px;">？</div>
+            </div>`,
+            options: [
+                `<svg style="width:30px; height:30px;" viewBox="0 0 50 50"><polygon points="25,5 45,45 5,45" fill="none" stroke="#c9d1d9" stroke-width="3"/><polygon points="25,20 35,40 15,40" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>`,
+                `<svg style="width:30px; height:30px;" viewBox="0 0 50 50"><polygon points="25,5 45,45 5,45" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>`,
+                `<svg style="width:30px; height:30px;" viewBox="0 0 50 50"><rect x="5" y="5" width="40" height="40" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>`,
+                `<svg style="width:30px; height:30px;" viewBox="0 0 50 50"><polygon points="25,5 45,25 25,45 5,25" fill="none" stroke="#c9d1d9" stroke-width="3"/><polygon points="25,15 35,25 25,35 15,25" fill="none" stroke="#c9d1d9" stroke-width="3"/></svg>`
+            ], correct: 0, exp: "各行において、左の図形と中央の図形を「合成（足し算）」したものが右の図形になります。"
+        },
+
+        // 【追加】SVGマトリクス2（数独的配置）
+        {
+            puzzle: `<div style="display:grid; grid-template-columns:repeat(3, 50px); gap:10px; margin:0 auto; width:fit-content; background:#161b22; padding:15px; border-radius:8px;">
+              <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3" stroke-dasharray="5,5"/><rect x="20" y="20" width="10" height="10" fill="#c9d1d9"/></svg>
+              <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3" stroke-dasharray="5,5"/><line x1="15" y1="15" x2="35" y2="35" stroke="#c9d1d9" stroke-width="3"/><line x1="35" y1="15" x2="15" y2="35" stroke="#c9d1d9" stroke-width="3"/></svg>
+              <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3" stroke-dasharray="5,5"/><polygon points="25,10 30,20 40,25 30,30 25,40 20,30 10,25 20,20" fill="#c9d1d9"/></svg>
+              
+              <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3"/><polygon points="25,10 30,20 40,25 30,30 25,40 20,30 10,25 20,20" fill="#c9d1d9"/></svg>
+              <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3"/><rect x="20" y="20" width="10" height="10" fill="#c9d1d9"/></svg>
+              <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3"/><line x1="15" y1="15" x2="35" y2="35" stroke="#c9d1d9" stroke-width="3"/><line x1="35" y1="15" x2="15" y2="35" stroke="#c9d1d9" stroke-width="3"/></svg>
+
+              <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3"/><circle cx="25" cy="25" r="15" fill="none" stroke="#c9d1d9" stroke-width="3"/><line x1="15" y1="15" x2="35" y2="35" stroke="#c9d1d9" stroke-width="3"/><line x1="35" y1="15" x2="15" y2="35" stroke="#c9d1d9" stroke-width="3"/></svg>
+              <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3"/><circle cx="25" cy="25" r="15" fill="none" stroke="#c9d1d9" stroke-width="3"/><polygon points="25,10 30,20 40,25 30,30 25,40 20,30 10,25 20,20" fill="#c9d1d9"/></svg>
+              <div style="display:flex; align-items:center; justify-content:center; border:2px dashed #ff9900; color:#ff9900; font-size:24px;">？</div>
+            </div>`,
+            options: [
+                `<svg style="width:30px; height:30px;" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3"/><circle cx="25" cy="25" r="15" fill="none" stroke="#c9d1d9" stroke-width="3"/><rect x="20" y="20" width="10" height="10" fill="#c9d1d9"/></svg>`,
+                `<svg style="width:30px; height:30px;" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3" stroke-dasharray="5,5"/><rect x="20" y="20" width="10" height="10" fill="#c9d1d9"/></svg>`,
+                `<svg style="width:30px; height:30px;" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3"/><rect x="20" y="20" width="10" height="10" fill="#c9d1d9"/></svg>`,
+                `<svg style="width:30px; height:30px;" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#c9d1d9" stroke-width="3"/><circle cx="25" cy="25" r="15" fill="none" stroke="#c9d1d9" stroke-width="3"/><line x1="15" y1="15" x2="35" y2="35" stroke="#c9d1d9" stroke-width="3"/><line x1="35" y1="15" x2="15" y2="35" stroke="#c9d1d9" stroke-width="3"/></svg>`
+            ], correct: 0, exp: "外枠（点線丸・実線丸・二重丸）と中身（四角・×印・星型）が、各行・列で重複せずに配置される数独的ルールです。"
+        },
+
         { puzzle: "🖤　🤍　🖤<br>🤍　🖤　🤍<br>🖤　🤍　？", options: ["🖤", "🤍", "🔷", "🔶"], correct: 0, exp: "縦横の配列において色が完全な反転対称となるパターンです。" },
-        { puzzle: "▲△△　→　△▲△　→　△△▲　→　？", options: ["▲△△", "△▲△", "△△▲", "▲▲▲"], correct: 0, exp: "黒い三角が右へ1マスずつ移動し、端に到達すると左端へループします。" },
 
         // --- 最終盤 41〜50 (超難度・完全抽象ロジック) ---
         { puzzle: "（規則：重なると色が反転する）<br>⬛⬜⬛ ＋ ⬜⬛⬜ ＝ ？", options: ["⬛⬜⬛", "⬜⬛⬜", "⬛⬛⬛", "⬜⬜⬜"], correct: 2, exp: "すべて異なる色が重なるため、全てが黒(または全て白)に統一される排他的論理和(XOR)です。" },
@@ -489,7 +541,8 @@
 
     function handleIqAnswer(selectedIndex) {
         const q = actualIqQuestions[iqCurrentIndex];
-        const isCorrect = selectedIndex === q.correct;
+        // ボーナス問題 (-1) は無条件で正解扱いとする
+        const isCorrect = (selectedIndex === q.correct) || (q.correct === -1);
         userIqSelections.push({ questionNum: iqCurrentIndex + 1, puzzle: q.puzzle, options: q.options, correct: q.correct, exp: q.exp, selected: selectedIndex, isCorrect: isCorrect });
 
         if (isCorrect) {
@@ -536,7 +589,7 @@
         
         let wrongCount = 0;
         userIqSelections.forEach(record => {
-            if (!record.isCorrect) {
+            if (!record.isCorrect && record.correct !== -1) { // ボーナス問題はレビューに出さない
                 wrongCount++;
                 const card = document.createElement('div'); card.className = 'review-card';
                 card.innerHTML = `
